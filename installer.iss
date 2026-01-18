@@ -1,5 +1,4 @@
-; Підключаємо плагін завантаження (має бути встановлений у системі)
-#include idp.iss
+#include "idp.iss"
 
 [Setup]
 AppName=H264 Pro Trimmer
