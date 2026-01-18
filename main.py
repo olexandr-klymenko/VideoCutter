@@ -1,3 +1,4 @@
+import ctypes
 import subprocess
 import threading
 import tkinter as tk
@@ -9,6 +10,13 @@ from PIL import Image, ImageTk
 
 # Прямий шлях до вашого FFmpeg
 FFMPEG_PATH = r"C:\ffmpeg-8.0.1-essentials_build\bin\ffmpeg.exe"
+
+
+# Покращення чіткості тексту (DPI Awareness) для Windows 10/11
+try:
+    ctypes.windll.shcore.SetProcessDpiAwareness(1)
+except Exception as e:
+    print(f"DPI Awareness error: {e}")
 
 
 class VideoVisualTrimmer:
