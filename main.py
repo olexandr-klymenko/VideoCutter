@@ -26,21 +26,22 @@ FFMPEG_PATH = config.get('Paths', 'ffmpeg_path', fallback=r"C:\ffmpeg-8.0.1-esse
 class PureFFmpegTrimmer:
     def __init__(self, root):
         self.root = root
-        self.root.title("FFmpeg Video Trimmer (Locked UI Edition)")
+        self.root.title("FFmpeg Video Trimmer (Auto-Scale Edition)")
         self.video_path = ""
         self.duration = 0.0
-        self.zoom_factor = 0.5
         self.last_img = None
         self.current_t = 0.0
         self.is_minutes_mode = tk.BooleanVar(value=False)
 
-        # Список елементів, які треба розблокувати після завантаження
         self.interactive_widgets = []
-
         self.setup_ui()
+
+        # Прив'язка події зміни розміру вікна для автоскейлінгу
+        self.canvas.bind("<Configure>", self.on_resize)
 
     def setup_ui(self):
         self.root.option_add("*Font", ("Segoe UI", 9))
+        self.root.geometry("900x600")  # Початковий розмір
 
         controls = tk.Frame(self.root, pady=10, padx=10)
         controls.pack(side="top", fill="x")
@@ -56,12 +57,6 @@ class PureFFmpegTrimmer:
         self.mode_check.pack(side="left", padx=15)
         self.interactive_widgets.append(self.mode_check)
 
-        tk.Label(btn_frame, text="🔍 Zoom:").pack(side="left", padx=(5, 2))
-        self.zoom_scale = tk.Scale(btn_frame, from_=0.1, to=1.5, resolution=0.1, orient="horizontal", length=80,
-                                   command=self.update_zoom)
-        self.zoom_scale.set(self.zoom_factor)
-        self.zoom_scale.pack(side="left")
-
         self.btn_trim = tk.Button(btn_frame, text="✂️ ОБРІЗАТИ", bg="#28a745", fg="white",
                                   font=("Segoe UI", 9, "bold"), command=self.start_trim_thread, state=tk.DISABLED)
         self.btn_trim.pack(side="right", padx=5)
@@ -75,6 +70,7 @@ class PureFFmpegTrimmer:
                                      fg="gray")
         self.status_label.pack(pady=5)
 
+        # Контейнер для прев'ю (Label)
         self.canvas = tk.Label(self.root, bg="#1a1a1a")
         self.canvas.pack(expand=True, fill="both")
 
@@ -82,7 +78,6 @@ class PureFFmpegTrimmer:
         frame = tk.Frame(parent)
         frame.pack(fill="x", pady=2)
 
-        # Збільшено width з 8 до 10, щоб довгі слова (ПОЧАТОК) влізали повністю
         tk.Label(frame, text=label_text, width=10, anchor="w").pack(side="left")
 
         scale = tk.Scale(frame, orient="horizontal", from_=0, to=100, resolution=0.01, showvalue=False,
@@ -101,7 +96,6 @@ class PureFFmpegTrimmer:
         return scale, entry
 
     def set_ui_state(self, state):
-        """Вмикає або вимикає всі інтерактивні елементи."""
         for widget in self.interactive_widgets:
             widget.config(state=state)
 
@@ -109,32 +103,47 @@ class PureFFmpegTrimmer:
         path = filedialog.askopenfilename(filetypes=[("Video files", "*.mp4 *.mkv *.avi *.mov *.ts")])
         if not path: return
 
-        self.video_path = path
+        # Використовуємо Path для коректної роботи зі шляхами
+        self.video_path = str(Path(path).resolve())
 
-        # Отримання тривалості
-        cmd = [FFMPEG_PATH, "-i", path]
-        p = subprocess.Popen(cmd, stderr=subprocess.PIPE, text=True, creationflags=0x08000000)
-        _, err = p.communicate()
-        match = re.search(r"Duration:\s(\d+):(\d+):(\d+\.\d+)", err)
+        # Команда з мінімальним виводом
+        cmd = [FFMPEG_PATH, "-hide_banner", "-i", self.video_path]
 
-        if match:
-            h, m, s = map(float, match.groups())
-            self.duration = h * 3600 + m * 60 + s
+        try:
+            # shell=False (за замовчуванням) краще для кирилиці в масивах cmd
+            p = subprocess.Popen(
+                cmd,
+                stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                text=True,
+                encoding='utf-8',
+                errors='ignore',
+                creationflags=0x08000000
+            )
+            _, err = p.communicate()
 
-            # Активуємо UI
-            self.set_ui_state(tk.NORMAL)
+            # Шукаємо тривалість
+            match = re.search(r"Duration:\s(\d+):(\d+):(\d+\.\d+)", err)
 
-            for s in [self.start_scale, self.end_scale]:
-                s.config(to=self.duration)
-            self.start_scale.set(0)
-            self.end_scale.set(self.duration)
-            self.current_t = 0
-            self.update_entries()
-            self.update_preview(0)
-        else:
-            messagebox.showerror("Помилка", "Не вдалося визначити тривалість відео. Можливо, файл пошкоджений.")
+            if match:
+                h, m, s = map(float, match.groups())
+                self.duration = h * 3600 + m * 60 + s
 
-    # --- Решта методів залишаються без змін ---
+                self.set_ui_state(tk.NORMAL)
+                for scale in [self.start_scale, self.end_scale]:
+                    scale.config(to=self.duration)
+                self.start_scale.set(0)
+                self.end_scale.set(self.duration)
+                self.current_t = 0
+                self.update_entries()
+                self.update_preview(0)
+            else:
+                # Якщо UTF-8 не спрацював, спробуємо "ansi" (для Windows)
+                print("Спроба з іншим кодуванням...")
+                # ... (логіка повтору, якщо потрібно)
+                messagebox.showerror("Помилка", "FFmpeg не зміг прочитати файл. Перевірте, чи шлях не занадто довгий.")
+        except Exception as e:
+            messagebox.showerror("Помилка", f"Критична помилка: {str(e)}")
 
     def format_time(self, seconds):
         if not self.is_minutes_mode.get(): return f"{seconds:.2f}"
@@ -199,24 +208,35 @@ class PureFFmpegTrimmer:
     def display_image(self, img, t):
         self.last_img = img
         self.current_t = t
-        w, h = img.size
-        nw, nh = int(w * self.zoom_factor), int(h * self.zoom_factor)
-        img_res = img.resize((nw, nh), Image.Resampling.LANCZOS)
-        img_tk = ImageTk.PhotoImage(img_res)
-        self.canvas.config(image=img_tk)
-        self.canvas.image = img_tk
+
+        # Отримуємо доступний розмір канвасу
+        canvas_w = self.canvas.winfo_width()
+        canvas_h = self.canvas.winfo_height()
+
+        if canvas_w > 10 and canvas_h > 10:
+            img_w, img_h = img.size
+            # Розрахунок коефіцієнта для збереження пропорцій (fit)
+            ratio = min(canvas_w / img_w, canvas_h / img_h)
+            nw, nh = int(img_w * ratio), int(img_h * ratio)
+
+            img_res = img.resize((nw, nh), Image.Resampling.LANCZOS)
+            img_tk = ImageTk.PhotoImage(img_res)
+            self.canvas.config(image=img_tk)
+            self.canvas.image = img_tk
+
         self.status_label.config(text=f"Позиція: {self.format_time(t)} / {self.format_time(self.duration)}", fg="black")
 
-    def update_zoom(self, v):
-        self.zoom_factor = float(v)
-        if self.last_img: self.display_image(self.last_img, self.current_t)
+    def on_resize(self, event):
+        """Викликається автоматично при зміні розміру вікна."""
+        if self.last_img:
+            self.display_image(self.last_img, self.current_t)
 
     def start_trim_thread(self):
         if not self.video_path: return
         save_path = filedialog.asksaveasfilename(initialfile=f"trimmed_{Path(self.video_path).name}",
                                                  defaultextension=".mp4")
         if save_path:
-            self.set_ui_state(tk.DISABLED)  # Блокуємо на час обробки
+            self.set_ui_state(tk.DISABLED)
             self.btn_trim.config(text="⏳ ОБРОБКА...")
             threading.Thread(target=self.run_trim, args=(save_path,), daemon=True).start()
 
