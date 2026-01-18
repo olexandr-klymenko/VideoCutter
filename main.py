@@ -1,22 +1,25 @@
-import ctypes
+import cv2
+import tkinter as tk
+from tkinter import filedialog, messagebox
+from PIL import Image, ImageTk
 import subprocess
 import threading
-import tkinter as tk
+import os
+import ctypes
 from pathlib import Path
-from tkinter import filedialog, messagebox
 
-import cv2
-from PIL import Image, ImageTk
+# --- КРИШТАЛЕВА ЧІТКІСТЬ (DPI Awareness) ---
+try:
+    # Повідомляємо Windows 11, що ми підтримуємо високу роздільну здатність
+    ctypes.windll.shcore.SetProcessDpiAwareness(1)
+except Exception:
+    try:
+        ctypes.windll.user32.SetProcessDPIAware()
+    except:
+        pass
 
 # Прямий шлях до вашого FFmpeg
 FFMPEG_PATH = r"C:\ffmpeg-8.0.1-essentials_build\bin\ffmpeg.exe"
-
-
-# Покращення чіткості тексту (DPI Awareness) для Windows 10/11
-try:
-    ctypes.windll.shcore.SetProcessDpiAwareness(1)
-except Exception as e:
-    print(f"DPI Awareness error: {e}")
 
 
 class VideoVisualTrimmer:
@@ -24,6 +27,11 @@ class VideoVisualTrimmer:
         self.root = root
         self.root.title("H.264 Pro Trimmer (Win11)")
         self.debug = debug
+
+        # Налаштування стандартного шрифту для всього вікна
+        self.default_font = ("Segoe UI", 9)
+        self.root.option_add("*Font", self.default_font)
+
         self.cap = None
         self.video_path = ""
         self.original_frame = None
@@ -39,34 +47,33 @@ class VideoVisualTrimmer:
         self.row1 = tk.Frame(self.top_controls)
         self.row1.pack(fill="x", pady=2)
 
-        self.btn_select = tk.Button(self.row1, text="📁 Відкрити відео", command=self.load_video)
+        self.btn_select = tk.Button(self.row1, text="📁 Відкрити відео", command=self.load_video, padx=10)
         self.btn_select.pack(side="left", padx=5)
 
         tk.Label(self.row1, text="🔍 Zoom:").pack(side="left", padx=(15, 2))
-        self.zoom_scale = tk.Scale(self.row1, from_=0.1, to=2.0, resolution=0.1, orient="horizontal", length=100,
+        self.zoom_scale = tk.Scale(self.row1, from_=0.1, to=2.0, resolution=0.1, orient="horizontal", length=120,
                                    command=self.update_zoom)
         self.zoom_scale.set(self.zoom_factor)
         self.zoom_scale.pack(side="left")
 
         self.btn_trim = tk.Button(self.row1, text="✂️ ОБРІЗАТИ (Enter)", bg="#28a745", fg="white",
-                                  font=("Arial", 9, "bold"), command=self.start_trim_thread)
+                                  font=("Segoe UI", 9, "bold"), command=self.start_trim_thread, padx=15)
         self.btn_trim.pack(side="right", padx=5)
 
         # Рядок 2: Таймлайн (Кадри + Стрілки)
-        self.group_b = tk.LabelFrame(self.top_controls, text="Налаштування фрагменту (Точне коригування стрілками)",
-                                     pady=5)
+        self.group_b = tk.LabelFrame(self.top_controls, text="Налаштування фрагменту (Точне коригування)", pady=5,
+                                     font=("Segoe UI", 9, "bold"))
         self.group_b.pack(fill="x", pady=5)
 
-        self.controls_list = []  # Список для блокування
+        self.controls_list = []
 
-        # START Frame
+        # START & STOP Frame creation
         self.create_frame_control(self.group_b, "START", "start")
-        # STOP Frame
         self.create_frame_control(self.group_b, "STOP", "stop")
 
         # Статус-бар
-        self.status_label = tk.Label(self.top_controls, text="Оберіть файл...", font=("Consolas", 9), fg="blue")
-        self.status_label.pack()
+        self.status_label = tk.Label(self.top_controls, text="Оберіть файл...", font=("Consolas", 10), fg="#555")
+        self.status_label.pack(pady=5)
 
         # --- ВІДЕО ---
         self.video_container = tk.Frame(root, bg="#1a1a1a")
@@ -75,26 +82,26 @@ class VideoVisualTrimmer:
         self.canvas.pack(expand=True)
 
         self.root.bind('<Return>', lambda e: self.start_trim_thread())
+        self.root.bind('<Control-o>', lambda e: self.load_video())
 
     def create_frame_control(self, parent, label_text, mode):
         frame = tk.Frame(parent)
-        frame.pack(fill="x", padx=5, pady=2)
+        frame.pack(fill="x", padx=10, pady=2)
 
         scale = tk.Scale(frame, orient="horizontal", label=label_text, command=lambda v: self.on_scale_move(mode))
         scale.pack(side="left", fill="x", expand=True)
 
-        # Блок кнопок-стрілок та інпута
         nav_frame = tk.Frame(frame)
         nav_frame.pack(side="right", padx=5, pady=(15, 0))
 
-        btn_prev = tk.Button(nav_frame, text="<", width=2, command=lambda: self.step_frame(mode, -1))
+        btn_prev = tk.Button(nav_frame, text="◀", width=3, command=lambda: self.step_frame(mode, -1))
         btn_prev.pack(side="left")
 
-        entry = tk.Entry(nav_frame, width=8, justify='center')
-        entry.pack(side="left", padx=2)
+        entry = tk.Entry(nav_frame, width=10, justify='center', font=("Consolas", 10))
+        entry.pack(side="left", padx=5)
         entry.bind('<Return>', lambda e: self.on_entry_change(mode))
 
-        btn_next = tk.Button(nav_frame, text=">", width=2, command=lambda: self.step_frame(mode, 1))
+        btn_next = tk.Button(nav_frame, text="▶", width=3, command=lambda: self.step_frame(mode, 1))
         btn_next.pack(side="left")
 
         if mode == "start":
@@ -128,7 +135,6 @@ class VideoVisualTrimmer:
         self.end_scale.set(self.total_frames - 1)
         self.update_entries()
         self.update_preview("start")
-        self.status_label.config(text=f"Файл завантажено. FPS: {round(self.fps, 2)}", fg="black")
 
     def on_scale_move(self, mode):
         self.update_entries()
@@ -164,7 +170,7 @@ class VideoVisualTrimmer:
     def update_status_time(self):
         s_s, e_s = self.start_scale.get() / self.fps, self.end_scale.get() / self.fps
         fmt = lambda s: f"{int(s // 3600):02}:{int((s % 3600) // 60):02}:{s % 60:05.2f}"
-        self.status_label.config(text=f"Діапазон: {fmt(s_s)} — {fmt(e_s)}", fg="black")
+        self.status_label.config(text=f"Діапазон: {fmt(s_s)} — {fmt(e_s)} (FPS: {round(self.fps, 2)})", fg="black")
 
     def update_zoom(self, v):
         self.zoom_factor = float(v)
@@ -173,14 +179,13 @@ class VideoVisualTrimmer:
     def refresh_display(self):
         if self.original_frame is None: return
         img = Image.fromarray(self.original_frame)
-        img = img.resize((int(img.width * self.zoom_factor), int(img.height * self.zoom_factor)),
-                         Image.Resampling.LANCZOS)
+        new_w, new_h = int(img.width * self.zoom_factor), int(img.height * self.zoom_factor)
+        img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
         img_tk = ImageTk.PhotoImage(img)
         self.canvas.config(image=img_tk)
         self.canvas.image = img_tk
 
     def set_gui_state(self, state):
-        """Блокування/розблокування інтерфейсу"""
         new_st = "disabled" if state == "busy" else "normal"
         for ctrl in self.controls_list:
             ctrl.config(state=new_st)
@@ -188,17 +193,15 @@ class VideoVisualTrimmer:
         self.zoom_scale.config(state=new_st)
         if state == "busy":
             self.btn_trim.config(text="⏳ ОБРОБКА...", state="disabled", bg="#95a5a6")
-            self.status_label.config(text="FFmpeg працює... Будь ласка, зачекайте", fg="red")
+            self.status_label.config(text="FFmpeg виконує обрізку... Зачекайте", fg="red")
         else:
             self.btn_trim.config(text="✂️ ОБРІЗАТИ (Enter)", state="normal", bg="#28a745")
 
     def start_trim_thread(self):
         if not self.video_path: return
-
         save_path = filedialog.asksaveasfilename(initialfile=f"trimmed_{Path(self.video_path).name}",
-                                                 defaultextension=".mp4", filetypes=[("MP4", "*.mp4")])
+                                                 defaultextension=".mp4", filetypes=[("MP4 Video", "*.mp4")])
         if not save_path: return
-
         self.set_gui_state("busy")
         threading.Thread(target=self.run_trim, args=(save_path,), daemon=True).start()
 
@@ -211,10 +214,7 @@ class VideoVisualTrimmer:
                '-c', 'copy', '-avoid_negative_ts', 'make_zero', str(Path(save_path).absolute())]
 
         try:
-            # Використовуємо правильне кодування та ігнорування помилок
             result = subprocess.run(cmd, capture_output=True, text=True, shell=False, encoding='utf-8', errors='ignore')
-
-            # Повертаємось у головний потік для оновлення GUI
             self.root.after(0, lambda: self.finish_trim(result))
         except Exception as e:
             self.root.after(0, lambda: messagebox.showerror("Error", str(e)))
@@ -223,7 +223,7 @@ class VideoVisualTrimmer:
     def finish_trim(self, result):
         self.set_gui_state("ready")
         if result.returncode == 0:
-            messagebox.showinfo("Успіх", "Відео обрізано успішно!")
+            messagebox.showinfo("Успіх", "Відео обрізано та збережено!")
         else:
             messagebox.showerror("FFmpeg Error", result.stderr)
         self.update_status_time()
