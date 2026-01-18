@@ -1,12 +1,12 @@
-import cv2
-import tkinter as tk
-from tkinter import filedialog, messagebox
-from PIL import Image, ImageTk
+import ctypes
 import subprocess
 import threading
-import os
-import ctypes
+import tkinter as tk
 from pathlib import Path
+from tkinter import filedialog, messagebox
+
+import cv2
+from PIL import Image, ImageTk
 
 # --- КРИШТАЛЕВА ЧІТКІСТЬ (DPI Awareness) ---
 try:
@@ -19,7 +19,11 @@ except Exception:
         pass
 
 # Прямий шлях до вашого FFmpeg
-FFMPEG_PATH = r"C:\ffmpeg-8.0.1-essentials_build\bin\ffmpeg.exe"
+import configparser
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+FFMPEG_PATH = config.get('Paths', 'ffmpeg_path', fallback=r"C:\ffmpeg-8.0.1-essentials_build\bin\ffmpeg.exe")
 
 
 class VideoVisualTrimmer:
@@ -209,12 +213,31 @@ class VideoVisualTrimmer:
         s_s = self.start_scale.get() / self.fps
         dur = (self.end_scale.get() / self.fps) - s_s
 
-        cmd = [FFMPEG_PATH, '-y', '-i', str(Path(self.video_path).absolute()),
-               '-ss', str(round(s_s, 3)), '-t', str(round(dur, 3)),
-               '-c', 'copy', '-avoid_negative_ts', 'make_zero', str(Path(save_path).absolute())]
+        # Параметри для Windows, щоб приховати консоль
+        CREATE_NO_WINDOW = 0x08000000  # Прапорець для приховування вікна
+
+        cmd = [
+            FFMPEG_PATH, '-y',
+            '-i', str(Path(self.video_path).absolute()),
+            '-ss', str(round(s_s, 3)),
+            '-t', str(round(dur, 3)),
+            '-c', 'copy',
+            '-avoid_negative_ts', 'make_zero',
+            str(Path(save_path).absolute())
+        ]
 
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, shell=False, encoding='utf-8', errors='ignore')
+            # Додаємо creationflags=CREATE_NO_WINDOW
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                shell=False,
+                encoding='utf-8',
+                errors='ignore',
+                creationflags=CREATE_NO_WINDOW  # <--- ЦЕ ВИПРАВЛЕННЯ
+            )
+
             self.root.after(0, lambda: self.finish_trim(result))
         except Exception as e:
             self.root.after(0, lambda: messagebox.showerror("Error", str(e)))
