@@ -1,12 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-block_cipher = None
-
 a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    # Копіюємо FFmpeg у внутрішню папку bin
     datas=[('bin/ffmpeg.exe', 'bin')],
     hiddenimports=[],
     hookspath=[],
@@ -15,17 +12,17 @@ a = Analysis(
     excludes=[],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
-    cipher=block_cipher,
+    cipher=None,
     noarchive=False,
 )
 
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+pyz = PYZ(a.pure, a.zipped_data, cipher=None)
 
 exe = EXE(
     pyz,
     a.scripts,
     [],
-    exclude_binaries=True, # ВАЖЛИВО для onedir
+    exclude_binaries=True, # Обов'язково True для onedir
     name='H264ProTrimmer',
     debug=False,
     bootloader_ignore_signals=False,
@@ -47,5 +44,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='H264ProTrimmer', # Ця папка з'явиться в dist/
+    name='H264ProTrimmer', # Назва вихідної папки в dist/
 )
