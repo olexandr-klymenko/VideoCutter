@@ -1,0 +1,51 @@
+name: Build and Release H264 Pro Trimmer
+
+on:
+  push:
+    tags:
+      - 'v*' # Запускається, коли ви створюєте тег, наприклад v1.0.0
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if (Test-Path requirements.txt) { pip install -r requirements.txt }
+        pip install pyinstaller
+
+    - name: Build with PyInstaller
+      run: pyinstaller --noconfirm --onedir --windowed main.py
+      # Примітка: переконайтеся, що назва main.py відповідає вашому головному файлу
+
+    - name: Install Inno Setup Download Plugin (IDP)
+      run: |
+        $url = "https://mitrich6694.github.io/inno-download-plugin/get/idp-1.5.1.exe"
+        Invoke-WebRequest -Uri $url -OutFile "idp_setup.exe"
+        Start-Process -FilePath ".\idp_setup.exe" -ArgumentList "/SILENT /VERYSILENT /SUPPRESSMSGBOXES" -Wait
+
+    - name: Build Installer with Inno Setup
+      uses: lowleveldesign/setup-inno-setup@v1
+
+    - name: Compile ISS script
+      run: iscc setup_script.iss # Переконайтеся, що файл називається саме так
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: Output/H264Trimmer_Setup.exe
+        name: Release ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

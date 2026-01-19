@@ -1,8 +1,8 @@
-import configparser
 import ctypes
 import io
 import re
 import subprocess
+import sys
 import threading
 import tkinter as tk
 from pathlib import Path
@@ -19,38 +19,77 @@ except:
     except:
         pass
 
-config = configparser.ConfigParser()
-config.read('config.ini')
-FFMPEG_PATH = config.get('Paths', 'ffmpeg_path', fallback=r"C:\ffmpeg-8.0.1-essentials_build\bin\ffmpeg.exe")
+# Шляхи через Path
+# Логіка визначення базової директорії для PyInstaller
+if hasattr(sys, '_MEIPASS'):
+    BASE_DIR = Path(sys._MEIPASS)
+else:
+    BASE_DIR = Path(__file__).parent
+
+FFMPEG_BIN = BASE_DIR / "bin" / "ffmpeg.exe"
 
 
 class PureFFmpegTrimmer:
     def __init__(self, root):
         self.root = root
         self.root.title("FFmpeg Video Trimmer")
-        self.video_path = ""
+        self.ffmpeg_version = "Невідомо"
+
+        # Перевірка FFmpeg та отримання версії
+        if not self.check_ffmpeg():
+            self.root.withdraw()
+            messagebox.showerror(
+                "Помилка",
+                f"Не знайдено або пошкоджено файл ffmpeg.exe за шляхом:\n{FFMPEG_BIN.absolute()}"
+            )
+            self.root.destroy()
+            return
+
+        self.video_path = None
         self.duration = 0.0
         self.last_img = None
         self.current_t = 0.0
         self.is_minutes_mode = tk.BooleanVar(value=False)
 
-        # Для автоповтору
         self.after_id = None
-        self.repeat_delay = 100  # мілісекунди між кроками
+        self.repeat_delay = 100
 
         self.interactive_widgets = []
         self.setup_ui()
         self.canvas.bind("<Configure>", self.on_resize)
 
+    def check_ffmpeg(self) -> bool:
+        """Перевірка та отримання версії ffmpeg."""
+        if not FFMPEG_BIN.exists():
+            return False
+        try:
+            # Отримуємо перший рядок виводу ffmpeg -version
+            result = subprocess.run(
+                [str(FFMPEG_BIN), "-version"],
+                capture_output=True,
+                text=True,
+                creationflags=0x08000000,
+                check=True
+            )
+            first_line = result.stdout.splitlines()[0]
+            # Витягуємо версію (наприклад, "ffmpeg version 7.0.1...")
+            match = re.search(r"version\s+([^\s,]+)", first_line)
+            self.ffmpeg_version = match.group(1) if match else "Виявлено"
+            return True
+        except (subprocess.CalledProcessError, OSError, IndexError):
+            return False
+
     def setup_ui(self):
         self.root.option_add("*Font", ("Segoe UI", 9))
-        self.root.geometry("1000x650")
+        self.root.geometry("1000x700")
 
         controls = tk.Frame(self.root, pady=10, padx=10)
         controls.pack(side="top", fill="x")
 
+        # Верхня панель з кнопками
         btn_frame = tk.Frame(controls)
         btn_frame.pack(fill="x")
+
         tk.Button(btn_frame, text="📁 Відкрити відео", command=self.load_video).pack(side="left", padx=5)
 
         self.mode_check = tk.Checkbutton(btn_frame, text="Хвилини (MM:SS)", variable=self.is_minutes_mode,
@@ -58,25 +97,30 @@ class PureFFmpegTrimmer:
         self.mode_check.pack(side="left", padx=15)
         self.interactive_widgets.append(self.mode_check)
 
+        # Напис про версію FFmpeg (сірим кольором поруч з налаштуваннями)
+        tk.Label(btn_frame, text=f"FFmpeg: {self.ffmpeg_version}", fg="#888888", font=("Segoe UI", 8)).pack(side="left",
+                                                                                                            padx=10)
+
         self.btn_trim = tk.Button(btn_frame, text="✂️ ОБРІЗАТИ", bg="#28a745", fg="white",
                                   font=("Segoe UI", 9, "bold"), command=self.start_trim_thread, state=tk.DISABLED)
         self.btn_trim.pack(side="right", padx=5)
         self.interactive_widgets.append(self.btn_trim)
 
+        # Слайдери
         self.start_scale, self.start_entry = self.create_time_control(controls, "ПОЧАТОК")
         self.end_scale, self.end_entry = self.create_time_control(controls, "КІНЕЦЬ")
 
-        self.status_label = tk.Label(controls, text="Будь ласка, спочатку відкрийте відео файл", font=("Consolas", 10),
-                                     fg="gray")
+        # Статус
+        self.status_label = tk.Label(controls, text="Очікування файлу...", font=("Consolas", 10), fg="gray")
         self.status_label.pack(pady=5)
 
+        # Полотно для відео
         self.canvas = tk.Label(self.root, bg="#1a1a1a")
         self.canvas.pack(expand=True, fill="both")
 
     def create_time_control(self, parent, label_text):
         frame = tk.Frame(parent)
         frame.pack(fill="x", pady=2)
-
         tk.Label(frame, text=label_text, width=10, anchor="w").pack(side="left")
 
         scale = tk.Scale(frame, orient="horizontal", from_=0, to=100, resolution=0.01, showvalue=False,
@@ -96,14 +140,11 @@ class PureFFmpegTrimmer:
 
         btn_minus = tk.Button(fine_frame, text="-0.1", width=4, state=tk.DISABLED)
         btn_minus.pack(side="left", padx=1)
-
         btn_plus = tk.Button(fine_frame, text="+0.1", width=4, state=tk.DISABLED)
         btn_plus.pack(side="left", padx=1)
 
-        # Прив'язка подій для утримання
         btn_minus.bind("<ButtonPress-1>", lambda e: self.start_auto_adjust(scale, -0.1))
         btn_minus.bind("<ButtonRelease-1>", lambda e: self.stop_auto_adjust())
-
         btn_plus.bind("<ButtonPress-1>", lambda e: self.start_auto_adjust(scale, 0.1))
         btn_plus.bind("<ButtonRelease-1>", lambda e: self.stop_auto_adjust())
 
@@ -111,30 +152,22 @@ class PureFFmpegTrimmer:
         return scale, entry
 
     def start_auto_adjust(self, scale, delta):
-        """Починає процес зміни часу."""
         self.adjust_time(scale, delta)
-        # Перша затримка трохи довша, щоб одиночний клік не сприймався як серія
         self.after_id = self.root.after(400, lambda: self.repeat_adjust(scale, delta))
 
     def repeat_adjust(self, scale, delta):
-        """Циклічно змінює час, поки кнопка натиснута."""
         self.adjust_time(scale, delta)
         self.after_id = self.root.after(self.repeat_delay, lambda: self.repeat_adjust(scale, delta))
 
     def stop_auto_adjust(self):
-        """Зупиняє автоповтор."""
         if self.after_id:
             self.root.after_cancel(self.after_id)
             self.after_id = None
-        # Після зупинки утримання оновлюємо прев'ю (для економії ресурсів під час затискання)
-        # Або можна оновлювати в adjust_time для реального часу
 
     def adjust_time(self, scale, delta):
         new_val = max(0, min(scale.get() + delta, self.duration))
         scale.set(new_val)
         self.update_entries()
-        # Для дуже швидкого відгуку можна викликати update_preview тут,
-        # але на слабких ПК це може "фрізити" інтерфейс.
         self.update_preview(new_val)
 
     def set_ui_state(self, state):
@@ -142,10 +175,15 @@ class PureFFmpegTrimmer:
             widget.config(state=state)
 
     def load_video(self):
-        path = filedialog.askopenfilename(filetypes=[("Video files", "*.mp4 *.mkv *.avi *.mov *.ts")])
-        if not path: return
-        self.video_path = str(Path(path).resolve())
-        cmd = [FFMPEG_PATH, "-hide_banner", "-i", self.video_path]
+        if not FFMPEG_BIN.exists():
+            messagebox.showerror("Помилка", "FFmpeg не знайдено!")
+            return
+
+        file_path = filedialog.askopenfilename(filetypes=[("Video files", "*.mp4 *.mkv *.avi *.mov *.ts")])
+        if not file_path: return
+
+        self.video_path = Path(file_path).resolve()
+        cmd = [str(FFMPEG_BIN), "-hide_banner", "-i", str(self.video_path)]
         try:
             p = subprocess.Popen(cmd, stderr=subprocess.PIPE, text=True, encoding='utf-8', errors='ignore',
                                  creationflags=0x08000000)
@@ -162,7 +200,7 @@ class PureFFmpegTrimmer:
                 self.update_entries()
                 self.update_preview(0)
         except Exception as e:
-            messagebox.showerror("Помилка", f"Критична помилка: {str(e)}")
+            messagebox.showerror("Помилка", f"Не вдалося прочитати файл: {e}")
 
     def format_time(self, seconds):
         if not self.is_minutes_mode.get(): return f"{seconds:.2f}"
@@ -204,13 +242,13 @@ class PureFFmpegTrimmer:
                 entry.insert(0, self.format_time(scale.get()))
 
     def update_preview(self, t):
-        if not self.video_path: return
+        if not self.video_path or not FFMPEG_BIN.exists(): return
         self.current_t = t
         self.status_label.config(text="⌛ Рендеринг...", fg="blue")
         threading.Thread(target=self._render_task, args=(t,), daemon=True).start()
 
     def _render_task(self, t):
-        cmd = [FFMPEG_PATH, '-ss', str(round(t, 3)), '-i', self.video_path, '-frames:v', '1',
+        cmd = [str(FFMPEG_BIN), '-ss', str(round(t, 3)), '-i', str(self.video_path), '-frames:v', '1',
                '-q:v', '3', '-f', 'image2pipe', '-vcodec', 'mjpeg', '-loglevel', 'error', '-']
         try:
             p = subprocess.Popen(cmd, stdout=subprocess.PIPE, creationflags=0x08000000)
@@ -238,20 +276,24 @@ class PureFFmpegTrimmer:
         if self.last_img: self.display_image(self.last_img, self.current_t)
 
     def start_trim_thread(self):
-        save_path = filedialog.asksaveasfilename(initialfile=f"trimmed_{Path(self.video_path).name}",
-                                                 defaultextension=".mp4")
+        default_name = f"trimmed_{self.video_path.name}"
+        save_path = filedialog.asksaveasfilename(initialfile=default_name, defaultextension=".mp4")
         if save_path:
             self.set_ui_state(tk.DISABLED)
             self.btn_trim.config(text="⏳ ОБРОБКА...")
-            threading.Thread(target=self.run_trim, args=(save_path,), daemon=True).start()
+            threading.Thread(target=self.run_trim, args=(Path(save_path),), daemon=True).start()
 
-    def run_trim(self, save_path):
+    def run_trim(self, save_path: Path):
         s, e = self.start_scale.get(), self.end_scale.get()
-        cmd = [FFMPEG_PATH, '-y', '-ss', str(round(s, 3)), '-t', str(round(e - s, 3)),
-               '-i', self.video_path, '-c', 'copy', '-avoid_negative_ts', 'make_zero', save_path]
+        cmd = [
+            str(FFMPEG_BIN), '-y', '-ss', str(round(s, 3)), '-t', str(round(e - s, 3)),
+            '-i', str(self.video_path), '-c', 'copy', '-avoid_negative_ts', 'make_zero', str(save_path)
+        ]
         try:
             subprocess.run(cmd, creationflags=0x08000000, check=True)
-            self.root.after(0, lambda: messagebox.showinfo("Успіх", "Готово!"))
+            self.root.after(0, lambda: messagebox.showinfo("Успіх", f"Готово!\nЗбережено: {save_path.name}"))
+        except Exception as err:
+            self.root.after(0, lambda: messagebox.showerror("Помилка", str(err)))
         finally:
             self.root.after(0, lambda: [self.set_ui_state(tk.NORMAL), self.btn_trim.config(text="✂️ ОБРІЗАТИ")])
 
@@ -259,4 +301,5 @@ class PureFFmpegTrimmer:
 if __name__ == "__main__":
     root = tk.Tk()
     app = PureFFmpegTrimmer(root)
-    root.mainloop()
+    if root.winfo_exists():
+        root.mainloop()
