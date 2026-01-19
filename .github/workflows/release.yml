@@ -3,11 +3,11 @@ name: Build and Release H264 Pro Trimmer
 on:
   push:
     tags:
-      - 'v*'
-  workflow_dispatch:
+      - 'v*' # Спрацьовує при створенні тегів v1.0, v2.1.3 тощо
+  workflow_dispatch: # Дозволяє запускати збірку вручну для тестів
 
 permissions:
-  contents: write # Надає право створювати релізи та завантажувати файли
+  contents: write # Необхідно для створення релізу та завантаження файлів
 
 jobs:
   build:
@@ -30,23 +30,33 @@ jobs:
 
     - name: Prepare FFmpeg for PyInstaller
       run: |
+        # Створюємо папку bin, яку очікує main.spec
         New-Item -ItemType Directory -Force -Path bin
+        
+        # Завантажуємо офіційний реліз FFmpeg (Essentials)
         $url = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
         Invoke-WebRequest -Uri $url -OutFile ffmpeg.zip
+        
+        # Розпаковуємо архів
         Expand-Archive -Path ffmpeg.zip -DestinationPath temp_ffmpeg
+        
+        # Знаходимо ffmpeg.exe у вкладених папках і копіюємо в проект
         $ffmpegExe = Get-ChildItem -Path temp_ffmpeg -Filter ffmpeg.exe -Recurse | Select-Object -First 1
         Copy-Item -Path $ffmpegExe.FullName -Destination bin\ffmpeg.exe
-        Write-Host "FFmpeg binary prepared in bin/ffmpeg.exe"
+        
+        Write-Host "FFmpeg prepared successfully."
 
     - name: Build EXE with PyInstaller
       run: pyinstaller --noconfirm main.spec
 
     - name: Build Installer (Inno Setup)
       run: |
-        # Прямий виклик компілятора Inno Setup
+        # Використовуємо вбудований у windows-latest компілятор ISCC
         & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup_script.iss /DAppVersion=${{ github.ref_name }}
 
     - name: Create GitHub Release
+      # Створюємо реліз тільки якщо пуш був з тегом
+      if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v2
       with:
         files: Output/*.exe

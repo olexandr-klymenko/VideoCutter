@@ -248,16 +248,55 @@ class PureFFmpegTrimmer:
         threading.Thread(target=self._render_task, args=(t,), daemon=True).start()
 
     def _render_task(self, t):
-        cmd = [str(FFMPEG_BIN), '-ss', str(round(t, 3)), '-i', str(self.video_path), '-frames:v', '1',
-               '-q:v', '3', '-f', 'image2pipe', '-vcodec', 'mjpeg', '-loglevel', 'error', '-']
+        # Додаємо унікальний маркер для поточного завдання
+        cmd = [
+            str(FFMPEG_BIN),
+            '-ss', str(round(t, 3)),
+            '-i', str(self.video_path),
+            '-vframes', '1',  # Отримати рівно один кадр
+            '-q:v', '4',  # Трохи знизимо якість MJPEG для швидкості
+            '-f', 'image2pipe',
+            '-vcodec', 'mjpeg',
+            '-loglevel', 'quiet',
+            '-'
+        ]
+
+        p = None
         try:
-            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, creationflags=0x08000000)
-            data, _ = p.communicate(timeout=2.0)
+            p = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                creationflags=0x08000000
+            )
+
+            # Встановлюємо жорсткий таймаут
+            data, _ = p.communicate(timeout=1.0)
+
             if data and len(data) > 500:
                 image = Image.open(io.BytesIO(data))
+                # Використовуємо чергу подій Tkinter для оновлення
                 self.root.after(0, lambda: self.display_image(image, t))
-        except:
-            pass
+            else:
+                raise Exception("Empty data")
+
+        except subprocess.TimeoutExpired:
+            if p:
+                p.kill()
+                p.wait()
+            # Повертаємо червоний напис про таймаут
+            self.root.after(0, lambda: self.status_label.config(
+                text=f"🛑 ТАЙМАУТ: Кадр на {self.format_time(t)} заважкий",
+                fg="red"
+            ))
+
+        except Exception:
+            if p:
+                p.kill()
+            self.root.after(0, lambda: self.status_label.config(
+                text="❌ Помилка рендеру кадру",
+                fg="red"
+            ))
 
     def display_image(self, img, t):
         self.last_img = img
