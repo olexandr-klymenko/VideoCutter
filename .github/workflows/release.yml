@@ -6,6 +6,9 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write # Надає право створювати релізи та завантажувати файли
+
 jobs:
   build:
     runs-on: windows-latest
