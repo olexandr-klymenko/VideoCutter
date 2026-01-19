@@ -376,8 +376,9 @@ class PureFFmpegTrimmer:
             self.btn_trim.config(text="⏳ ОБРОБКА...")
             threading.Thread(target=self.run_trim, args=(Path(save_path),), daemon=True).start()
 
-    def run_trim(self, save_path: Path):
-        s, e = self.start_scale.get(), self.end_scale.get()
+    def run_trim(self, save_path: Path, start_s=None, end_s=None):
+        s = start_s if start_s is not None else self.start_scale.get()
+        e = end_s if end_s is not None else self.end_scale.get()
         cmd = [
             str(FFMPEG_BIN), '-y', '-ss', str(round(s, 3)), '-t', str(round(e - s, 3)),
             '-i', str(self.video_path), '-c', 'copy', '-avoid_negative_ts', 'make_zero', str(save_path)
