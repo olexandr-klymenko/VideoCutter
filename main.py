@@ -13,9 +13,7 @@ import requests
 from PIL import Image, ImageTk
 
 BUTTON_RELEASE_ = "<ButtonRelease-1>"
-
 SEGOE_UI = "Segoe UI"
-
 ERROR_STR = "Помилка"
 
 
@@ -62,14 +60,21 @@ def show_update_dialog(new_version):
         webbrowser.open(download_url)
 
 
-# --- DPI Awareness ---
-try:
-    ctypes.windll.shcore.SetProcessDpiAwareness(1)
-except:
-    try:
-        ctypes.windll.user32.SetProcessDPIAware()
-    except:
-        pass
+def set_dpi_awareness():
+    """ Sets DPI awareness using the best available Windows API. """
+    # Define the calls in order of preference (Modern -> Legacy)
+    dpi_calls = [
+        lambda: ctypes.windll.shcore.SetProcessDpiAwareness(1),  # Win 8.1+
+        lambda: ctypes.windll.user32.SetProcessDPIAware()  # Win Vista+
+    ]
+
+    for call in dpi_calls:
+        try:
+            call()
+            return  # Exit once a method succeeds
+        except (AttributeError, OSError):
+            continue  # Try the next method if this one isn't available
+
 
 if hasattr(sys, '_MEIPASS'):
     BASE_DIR = Path(sys._MEIPASS)
@@ -308,7 +313,8 @@ class PureFFmpegTrimmer:
             scale.set(clamped_val)
             self.update_preview(clamped_val)
 
-        except (ValueError, TypeError, KeyError) as e:
+        except (ValueError, TypeError, KeyError) as err:
+            print(err)
             # 3. Catch specific exceptions instead of a bare 'except:'
             # This prevents masking system exits or memory errors
             self.update_entries()
@@ -432,12 +438,16 @@ class PureFFmpegTrimmer:
             subprocess.run(cmd, creationflags=0x08000000, check=True)
             self.root.after(0, lambda: messagebox.showinfo("Успіх", f"Готово!\nЗбережено: {save_path.name}"))
         except Exception as err:
-            self.root.after(0, lambda: messagebox.showerror("Помилка", str(err)))
+            self.root.after(0, lambda: messagebox.showerror(ERROR_STR, str(err)))
         finally:
             self.root.after(0, lambda: [self.set_ui_state(tk.NORMAL), self.btn_trim.config(text="✂️ ОБРІЗАТИ")])
 
 
 if __name__ == "__main__":
+    # 1. Set DPI Awareness FIRST
+    if sys.platform == "win32":
+        set_dpi_awareness()
+
     root = tk.Tk()
     app = PureFFmpegTrimmer(root)
     if root.winfo_exists():
