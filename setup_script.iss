@@ -1,12 +1,19 @@
-#ifndef AppVersion
-  #define AppVersion "v1.0.0"
+#define FileHandle
+#define FileLine
+#if FileHandle = FileOpen("version.txt")
+  #define AppVersionStr FileRead(FileHandle)
+  #if FileHandle
+    #expr FileClose(FileHandle)
+  #endif
+#else
+  #define AppVersionStr "1.0.0"
 #endif
 
 [Setup]
 AppId={{H264-PRO-TRIMMER-9911-2024}}
 AppName=H264 Pro Trimmer
-AppVersion={#AppVersion}
-OutputBaseFilename=H264Trimmer_Setup_{#AppVersion}
+AppVersion={#AppVersionStr}
+OutputBaseFilename=H264Trimmer_Setup_v{#AppVersionStr}
 DefaultDirName={autopf}\H264ProTrimmer
 DefaultGroupName=H264 Pro Trimmer
 UninstallDisplayIcon={app}\H264ProTrimmer.exe
@@ -17,7 +24,7 @@ WizardStyle=modern
 ; Метадані (Виправлено назви директив)
 VersionInfoCompany=H264 Pro Project
 VersionInfoDescription=Lossless Video Trimmer
-VersionInfoTextVersion={#AppVersion}
+VersionInfoTextVersion={#AppVersionStr}
 VersionInfoCopyright=Copyright (C) 2026
 
 [Files]

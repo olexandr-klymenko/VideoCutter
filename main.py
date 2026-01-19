@@ -5,10 +5,58 @@ import subprocess
 import sys
 import threading
 import tkinter as tk
+import webbrowser
 from pathlib import Path
 from tkinter import filedialog, messagebox
 
+import requests
 from PIL import Image, ImageTk
+
+
+# Функція для отримання шляху до файлів (враховує PyInstaller onedir)
+def get_resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        return Path(sys._MEIPASS) / relative_path
+    return Path(__file__).parent / relative_path
+
+
+# Читаємо версію з файлу
+def get_current_version():
+    try:
+        with open(get_resource_path("version.txt"), "r") as f:
+            return f.read().strip()
+    except:
+        return "1.0.0-dev"
+
+
+VERSION = f"v{get_current_version()}"
+REPO_OWNER = "olexandr-klymenko"
+REPO_NAME = "VideoCutter"
+
+
+def check_for_updates():
+    """Функція для перевірки оновлень через GitHub API"""
+    try:
+        api_url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/releases/latest"
+        response = requests.get(api_url, timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            latest_version = data.get("tag_name", "")
+
+            # Якщо версія на GitHub не збігається з поточною
+            if latest_version and latest_version != VERSION:
+                # Викликаємо діалог у головному потоці через root.after
+                root.after(0, lambda: show_update_dialog(latest_version))
+    except Exception as e:
+        print(f"Update check failed: {e}")
+
+
+def show_update_dialog(new_version):
+    download_url = f"https://github.com/{REPO_OWNER}/{REPO_NAME}/releases/latest"
+    msg = f"Доступна нова версія: {new_version}\nПоточна версія: {VERSION}\n\nБажаєте перейти до завантаження?"
+    if messagebox.askyesno("Знайдено оновлення", msg):
+        webbrowser.open(download_url)
+
 
 # --- DPI Awareness ---
 try:
@@ -32,7 +80,7 @@ FFMPEG_BIN = BASE_DIR / "bin" / "ffmpeg.exe"
 class PureFFmpegTrimmer:
     def __init__(self, root):
         self.root = root
-        self.root.title("FFmpeg Video Trimmer")
+        self.root.title(f"H264 Pro Trimmer {VERSION}")
         self.ffmpeg_version = "Невідомо"
 
         # Перевірка FFmpeg та отримання версії
@@ -57,6 +105,12 @@ class PureFFmpegTrimmer:
         self.interactive_widgets = []
         self.setup_ui()
         self.canvas.bind("<Configure>", self.on_resize)
+
+        self.version_label = tk.Label(root, text=f"Версія: {VERSION}", fg="gray")
+        self.version_label.pack(side="bottom", anchor="e", padx=10, pady=5)
+
+        update_thread = threading.Thread(target=check_for_updates, daemon=True)
+        update_thread.start()
 
     def check_ffmpeg(self) -> bool:
         """Перевірка та отримання версії ffmpeg."""
