@@ -2,16 +2,12 @@
 
 block_cipher = None
 
-# Список файлів/папок для додавання: (звідки, куди)
-added_files = [
-    ('bin/ffmpeg.exe', 'bin'),
-]
-
 a = Analysis(
-    ['main.py'],  # Вкажіть ім'я вашого головного скрипта
+    ['main.py'],
     pathex=[],
     binaries=[],
-    datas=added_files,
+    # Копіюємо FFmpeg у внутрішню папку bin
+    datas=[('bin/ffmpeg.exe', 'bin')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -28,21 +24,28 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
     [],
-    name='VideoTrimmer',  # Назва вашого .exe файлу
+    exclude_binaries=True, # ВАЖЛИВО для onedir
+    name='H264ProTrimmer',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    upx_exclude=[],
-    runtime_tmpdir=None,
-    console=False,       # Вимикає консоль (чорне вікно)
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+)
+
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='H264ProTrimmer', # Ця папка з'явиться в dist/
 )
