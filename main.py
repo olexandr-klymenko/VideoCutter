@@ -136,11 +136,12 @@ class PureFFmpegTrimmer:
     def setup_ui(self):
         self.root.option_add("*Font", ("Segoe UI", 9))
         self.root.geometry("1000x700")
+        self.root.minsize(800, 600)  # Додаємо мінімальний розмір вікна
 
         controls = tk.Frame(self.root, pady=10, padx=10)
         controls.pack(side="top", fill="x")
 
-        # Верхня панель з кнопками
+        # --- Верхня панель ---
         btn_frame = tk.Frame(controls)
         btn_frame.pack(fill="x")
 
@@ -151,18 +152,27 @@ class PureFFmpegTrimmer:
         self.mode_check.pack(side="left", padx=15)
         self.interactive_widgets.append(self.mode_check)
 
-        # Напис про версію FFmpeg (сірим кольором поруч з налаштуваннями)
-        tk.Label(btn_frame, text=f"FFmpeg: {self.ffmpeg_version}", fg="#888888", font=("Segoe UI", 8)).pack(side="left",
-                                                                                                            padx=10)
+        # Інфо-панель (Версія програми та FFmpeg)
+        info_frame = tk.Frame(btn_frame)
+        info_frame.pack(side="left", padx=10)
+
+        tk.Label(info_frame, text=f"App: {VERSION}", fg="#888888", font=("Segoe UI", 8)).pack(side="top", anchor="w")
+        tk.Label(info_frame, text=f"FFmpeg: {self.ffmpeg_version}", fg="#888888", font=("Segoe UI", 8)).pack(side="top",
+                                                                                                             anchor="w")
 
         self.btn_trim = tk.Button(btn_frame, text="✂️ ОБРІЗАТИ", bg="#28a745", fg="white",
                                   font=("Segoe UI", 9, "bold"), command=self.start_trim_thread, state=tk.DISABLED)
         self.btn_trim.pack(side="right", padx=5)
         self.interactive_widgets.append(self.btn_trim)
 
-        # Слайдери
+        # --- Слайдери ---
         self.start_scale, self.start_entry = self.create_time_control(controls, "ПОЧАТОК")
         self.end_scale, self.end_entry = self.create_time_control(controls, "КІНЕЦЬ")
+
+        # --- Новий рядок: Інформація про результат ---
+        self.result_info_label = tk.Label(controls, text="Тривалість фрагмента: 0.00 сек",
+                                          font=("Segoe UI", 9, "bold"), fg="#0056b3")
+        self.result_info_label.pack(pady=2)
 
         # Статус
         self.status_label = tk.Label(controls, text="Очікування файлу...", font=("Consolas", 10), fg="gray")
@@ -178,7 +188,8 @@ class PureFFmpegTrimmer:
         tk.Label(frame, text=label_text, width=10, anchor="w").pack(side="left")
 
         scale = tk.Scale(frame, orient="horizontal", from_=0, to=100, resolution=0.01, showvalue=False,
-                         state=tk.DISABLED)
+                         state=tk.DISABLED,
+                         command=lambda _: self.update_entries())  # Додано автоматичне оновлення
         scale.pack(side="left", fill="x", expand=True, padx=5)
 
         scale.bind("<Button-1>", lambda e: self.jump_to_click(e, scale) if scale['state'] != tk.DISABLED else None)
@@ -253,6 +264,7 @@ class PureFFmpegTrimmer:
                 self.end_scale.set(self.duration)
                 self.update_entries()
                 self.update_preview(0)
+                self.update_entries()
         except Exception as e:
             messagebox.showerror("Помилка", f"Не вдалося прочитати файл: {e}")
 
@@ -294,6 +306,26 @@ class PureFFmpegTrimmer:
             if entry['state'] != tk.DISABLED:
                 entry.delete(0, tk.END)
                 entry.insert(0, self.format_time(scale.get()))
+
+        # Викликаємо оновлення тривалості
+        self.refresh_duration_info()
+
+    def refresh_duration_info(self):
+        """Окремий метод для оновлення інфо-лейбла тривалості фрагмента"""
+        diff = self.end_scale.get() - self.start_scale.get()
+        mode_suffix = "хв:сек" if self.is_minutes_mode.get() else "сек."
+
+        if diff < 0:
+            self.result_info_label.config(text="⚠️ Помилка: Початок більший за кінець!", fg="red")
+            self.btn_trim.config(state=tk.DISABLED)  # Блокуємо кнопку обрізки
+        else:
+            # Використовуємо format_time для чисел, але додаємо пояснення одиниць
+            self.result_info_label.config(
+                text=f"Тривалість фрагмента: {self.format_time(diff)} {mode_suffix}",
+                fg="#0056b3"
+            )
+            if self.video_path:  # Повертаємо кнопку в робочий стан
+                self.btn_trim.config(state=tk.NORMAL)
 
     def update_preview(self, t):
         if not self.video_path or not FFMPEG_BIN.exists(): return
