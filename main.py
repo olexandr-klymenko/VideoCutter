@@ -12,6 +12,12 @@ from tkinter import filedialog, messagebox
 import requests
 from PIL import Image, ImageTk
 
+BUTTON_RELEASE_ = "<ButtonRelease-1>"
+
+SEGOE_UI = "Segoe UI"
+
+ERROR_STR = "Помилка"
+
 
 # Функція для отримання шляху до файлів (враховує PyInstaller onedir)
 def get_resource_path(relative_path):
@@ -25,7 +31,7 @@ def get_current_version():
     try:
         with open(get_resource_path("version.txt"), "r") as f:
             return f.read().strip()
-    except:
+    except FileNotFoundError:
         return "1.0.0-dev"
 
 
@@ -43,9 +49,7 @@ def check_for_updates():
             data = response.json()
             latest_version = data.get("tag_name", "")
 
-            # Якщо версія на GitHub не збігається з поточною
             if latest_version and latest_version != VERSION:
-                # Викликаємо діалог у головному потоці через root.after
                 root.after(0, lambda: show_update_dialog(latest_version))
     except Exception as e:
         print(f"Update check failed: {e}")
@@ -67,8 +71,6 @@ except:
     except:
         pass
 
-# Шляхи через Path
-# Логіка визначення базової директорії для PyInstaller
 if hasattr(sys, '_MEIPASS'):
     BASE_DIR = Path(sys._MEIPASS)
 else:
@@ -83,11 +85,10 @@ class PureFFmpegTrimmer:
         self.root.title(f"H264 Pro Trimmer {VERSION}")
         self.ffmpeg_version = "Невідомо"
 
-        # Перевірка FFmpeg та отримання версії
         if not self.check_ffmpeg():
             self.root.withdraw()
             messagebox.showerror(
-                "Помилка",
+                ERROR_STR,
                 f"Не знайдено або пошкоджено файл ffmpeg.exe за шляхом:\n{FFMPEG_BIN.absolute()}"
             )
             self.root.destroy()
@@ -134,7 +135,7 @@ class PureFFmpegTrimmer:
             return False
 
     def setup_ui(self):
-        self.root.option_add("*Font", ("Segoe UI", 9))
+        self.root.option_add("*Font", (SEGOE_UI, 9))
         self.root.geometry("1000x700")
         self.root.minsize(800, 600)  # Додаємо мінімальний розмір вікна
 
@@ -156,12 +157,12 @@ class PureFFmpegTrimmer:
         info_frame = tk.Frame(btn_frame)
         info_frame.pack(side="left", padx=10)
 
-        tk.Label(info_frame, text=f"App: {VERSION}", fg="#888888", font=("Segoe UI", 8)).pack(side="top", anchor="w")
-        tk.Label(info_frame, text=f"FFmpeg: {self.ffmpeg_version}", fg="#888888", font=("Segoe UI", 8)).pack(side="top",
-                                                                                                             anchor="w")
+        tk.Label(info_frame, text=f"App: {VERSION}", fg="#888888", font=(SEGOE_UI, 8)).pack(side="top", anchor="w")
+        tk.Label(info_frame, text=f"FFmpeg: {self.ffmpeg_version}", fg="#888888", font=(SEGOE_UI, 8)).pack(side="top",
+                                                                                                           anchor="w")
 
         self.btn_trim = tk.Button(btn_frame, text="✂️ ОБРІЗАТИ", bg="#28a745", fg="white",
-                                  font=("Segoe UI", 9, "bold"), command=self.start_trim_thread, state=tk.DISABLED)
+                                  font=(SEGOE_UI, 9, "bold"), command=self.start_trim_thread, state=tk.DISABLED)
         self.btn_trim.pack(side="right", padx=5)
         self.interactive_widgets.append(self.btn_trim)
 
@@ -171,7 +172,7 @@ class PureFFmpegTrimmer:
 
         # --- Новий рядок: Інформація про результат ---
         self.result_info_label = tk.Label(controls, text="Тривалість фрагмента: 0.00 сек",
-                                          font=("Segoe UI", 9, "bold"), fg="#0056b3")
+                                          font=(SEGOE_UI, 9, "bold"), fg="#0056b3")
         self.result_info_label.pack(pady=2)
 
         # Статус
@@ -193,7 +194,7 @@ class PureFFmpegTrimmer:
         scale.pack(side="left", fill="x", expand=True, padx=5)
 
         scale.bind("<Button-1>", lambda e: self.jump_to_click(e, scale) if scale['state'] != tk.DISABLED else None)
-        scale.bind("<ButtonRelease-1>",
+        scale.bind(BUTTON_RELEASE_,
                    lambda e: self.update_preview(scale.get()) if scale['state'] != tk.DISABLED else None)
 
         entry = tk.Entry(frame, width=10, justify='center', state=tk.DISABLED)
@@ -209,9 +210,9 @@ class PureFFmpegTrimmer:
         btn_plus.pack(side="left", padx=1)
 
         btn_minus.bind("<ButtonPress-1>", lambda e: self.start_auto_adjust(scale, -0.1))
-        btn_minus.bind("<ButtonRelease-1>", lambda e: self.stop_auto_adjust())
+        btn_minus.bind(BUTTON_RELEASE_, lambda e: self.stop_auto_adjust())
         btn_plus.bind("<ButtonPress-1>", lambda e: self.start_auto_adjust(scale, 0.1))
-        btn_plus.bind("<ButtonRelease-1>", lambda e: self.stop_auto_adjust())
+        btn_plus.bind(BUTTON_RELEASE_, lambda e: self.stop_auto_adjust())
 
         self.interactive_widgets.extend([scale, entry, btn_minus, btn_plus])
         return scale, entry
@@ -292,13 +293,24 @@ class PureFFmpegTrimmer:
         self.update_preview(val)
 
     def on_entry_change(self, scale, entry):
-        if entry['state'] == tk.DISABLED: return
+        # 1. Early return (Guard Clause) to reduce nesting
+        if entry['state'] == tk.DISABLED:
+            return
+
         try:
-            val = self.parse_time(entry.get())
-            val = max(0, min(val, self.duration))
-            scale.set(val)
-            self.update_preview(val)
-        except:
+            # 2. Specific logic extraction
+            raw_value = entry.get()
+            time_val = self.parse_time(raw_value)
+
+            # Clamp value within bounds
+            clamped_val = max(0, min(time_val, self.duration))
+
+            scale.set(clamped_val)
+            self.update_preview(clamped_val)
+
+        except (ValueError, TypeError, KeyError) as e:
+            # 3. Catch specific exceptions instead of a bare 'except:'
+            # This prevents masking system exits or memory errors
             self.update_entries()
 
     def update_entries(self):
@@ -359,12 +371,12 @@ class PureFFmpegTrimmer:
             # Встановлюємо жорсткий таймаут
             data, _ = p.communicate(timeout=1.0)
 
-            if data and len(data) > 500:
-                image = Image.open(io.BytesIO(data))
-                # Використовуємо чергу подій Tkinter для оновлення
-                self.root.after(0, lambda: self.display_image(image, t))
-            else:
-                raise Exception("Empty data")
+            # Specific check for data presence and size
+            if not data or len(data) <= 500:
+                raise ValueError(f"Received insufficient data from subprocess: {len(data) if data else 0} bytes")
+
+            image = Image.open(io.BytesIO(data))
+            self.root.after(0, lambda: self.display_image(image, t))
 
         except subprocess.TimeoutExpired:
             if p:
@@ -376,7 +388,8 @@ class PureFFmpegTrimmer:
                 fg="red"
             ))
 
-        except Exception:
+        except Exception as err:
+            print(err)
             if p:
                 p.kill()
             self.root.after(0, lambda: self.status_label.config(

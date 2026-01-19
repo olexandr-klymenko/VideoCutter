@@ -1,9 +1,11 @@
-import unittest
-from unittest.mock import patch
+import sys
 from pathlib import Path
 import tkinter as tk
 
-# Імпортуємо ваш клас
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+import unittest
+from unittest.mock import patch
 from main import PureFFmpegTrimmer
 
 
@@ -73,7 +75,7 @@ class TestVideoCutter(unittest.TestCase):
 
         # Перевіряємо математику (Duration = End - Start)
         self.assertEqual(actual_start, 10.5)
-        self.assertEqual(actual_duration, 14.5)  # 25.0 - 10.5 = 14.5
+        self.assertEqual(actual_duration, 14.5)
 
         # Перевіряємо кодек
         self.assertIn('copy', cmd)

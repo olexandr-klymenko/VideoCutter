@@ -16,7 +16,7 @@ python check_configs.py
 
 # 2. Запуск юніт-тестів
 echo "--- Step 2: Running Unit Tests ---"
-python -m unittest test_logic.py
+python -m unittest discover -s tests -p "test_*.py"
 echo "✅ All tests passed!"
 
 # 3. Зчитування версії
@@ -25,10 +25,11 @@ TAG="v$VERSION"
 echo "--- Step 3: Preparing release $TAG ---"
 
 # 4. Перевірка Git (тільки якщо не dry-run)
-if [ "$DRY_RUN" = false ]; then
+if [[ "$DRY_RUN" = false ]]; then
     git fetch --tags
     if git rev-parse "$TAG" >/dev/null 2>&1; then
-        echo "❌ Error: Tag $TAG already exists in Git. Update version.txt first."
+        # Redirected error message to stderr
+        echo "❌ Error: Tag $TAG already exists in Git. Update version.txt first." >&2
         exit 1
     fi
 fi
@@ -42,7 +43,7 @@ pyinstaller --noconfirm main.spec
 
 # Шлях до компилятора Inno Setup (перевірте, чи він збігається з вашим)
 ISCC_PATH="/c/Program Files (x86)/Inno Setup 6/ISCC.exe"
-if [ -f "$ISCC_PATH" ]; then
+if [[ -f "$ISCC_PATH" ]]; then
     echo "Running Inno Setup..."
     "$ISCC_PATH" setup_script.iss
     echo "✅ Installer created successfully in Output/ folder."
@@ -55,7 +56,7 @@ echo "Cleaning up build artifacts..."
 rm -rf build dist
 
 # 7. Пуш у GitHub (Тільки якщо НЕ dry-run)
-if [ "$DRY_RUN" = false ]; then
+if [[ "$DRY_RUN" = false ]]; then
     echo "--- Step 5: Pushing to GitHub ---"
     git add .
     git commit -m "release: $TAG (automated build with tests)"

@@ -18,7 +18,7 @@ echo "--- ЕТАП 4: Перевірка результату PyInstaller ---"
 # Витягуємо назву проекту з .spec файлу
 PROJ_NAME=$(grep -m 1 "name=" main.spec | cut -d"'" -f2)
 
-if [ -d "dist/$PROJ_NAME" ]; then
+if [[ -d "dist/$PROJ_NAME" ]]; then
     echo "✅ Підтверджено: Знайдено папку dist/$PROJ_NAME"
 else
     echo "❌ Помилка: Папка dist/$PROJ_NAME не знайдена!"
@@ -30,7 +30,7 @@ echo "--- ЕТАП 5: Запуск Inno Setup ---"
 # Зазвичай він знаходиться тут, перевірте свій шлях!
 ISCC_PATH="/c/Program Files (x86)/Inno Setup 6/ISCC.exe"
 
-if [ -f "$ISCC_PATH" ]; then
+if [[ -f "$ISCC_PATH" ]]; then
     "$ISCC_PATH" setup_script.iss
 else
     echo "⚠️ Попередження: ISCC.exe не знайдено за шляхом $ISCC_PATH"
