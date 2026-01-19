@@ -71,7 +71,7 @@ def validate_requirements():
             with open(REQUIREMENTS_TXT, "r", encoding=enc) as f:
                 libs = f.read().lower()
                 break
-        except (UnicodeDecodeError, UnicodeError):
+        except UnicodeError:
             continue
 
     required = ["requests", "pillow", "pyinstaller"]

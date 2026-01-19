@@ -247,7 +247,7 @@ class PureFFmpegTrimmer:
 
     def load_video(self):
         if not FFMPEG_BIN.exists():
-            messagebox.showerror("Помилка", "FFmpeg не знайдено!")
+            messagebox.showerror(ERROR_STR, "FFmpeg не знайдено!")
             return
 
         file_path = filedialog.askopenfilename(filetypes=[("Video files", "*.mp4 *.mkv *.avi *.mov *.ts")])
@@ -272,7 +272,7 @@ class PureFFmpegTrimmer:
                 self.update_preview(0)
                 self.update_entries()
         except Exception as e:
-            messagebox.showerror("Помилка", f"Не вдалося прочитати файл: {e}")
+            messagebox.showerror(ERROR_STR, f"Не вдалося прочитати файл: {e}")
 
     def format_time(self, seconds):
         if not self.is_minutes_mode.get(): return f"{seconds:.2f}"
