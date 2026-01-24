@@ -3,116 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H264 Pro Trimmer — Fast Video Trimming</title>
+
+    <title>Pro Video Trimmer — Fast H.264 Video Cutter Without Re-encoding</title>
+    <meta name="description" content="Lossless video trimming tool for H.264 files. Save time and quality with Stream Copy technology. Free and open-source for Windows.">
+    <meta name="keywords" content="video trimmer, H264 cutter, lossless video edit, ffmpeg trimmer, open source video cutter, video cutting tool">
+    <meta name="author" content="Olexandr Klymenko">
+    <link rel="canonical" href="https://olexandr-klymenko.github.io/VideoCutter/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Pro Video Trimmer — Lossless H.264 Cutter">
+    <meta property="og:description" content="Trim videos instantly without losing quality. High-speed processing powered by FFmpeg.">
+    <meta property="og:image" content="og-preview.jpg"> <meta property="og:url" content="https://olexandr-klymenko.github.io/VideoCutter/">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Pro Video Trimmer">
+    <meta name="twitter:description" content="Fast and lossless H.264 video trimming tool.">
+
     <link rel="icon" type="image/x-icon" href="favicon.ico">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Pro Video Trimmer",
+      "operatingSystem": "Windows",
+      "applicationCategory": "MultimediaApplication",
+      "description": "A high-speed lossless video trimming tool using FFmpeg Stream Copy technology.",
+      "softwareVersion": "1.0.8",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Olexandr Klymenko"
+      }
+    }
+    </script>
+
     <style>
-        .gradient-bg {
-            background: radial-gradient(circle at top right, #1e293b 0%, #0f172a 100%);
-        }
-
+        .gradient-bg { background: radial-gradient(circle at top right, #1e293b 0%, #0f172a 100%); }
         @keyframes pulse-green {
-            0% {
-                shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
-            }
-            70% {
-                box-shadow: 0 0 0 15px rgba(34, 197, 94, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
-            }
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
-
-        .animate-pulse-slow {
-            animation: pulse-green 2s infinite;
-        }
+        .animate-pulse-slow { animation: pulse-green 2s infinite; }
     </style>
 </head>
 <body class="gradient-bg text-white font-sans min-h-screen">
 
-<div class="flex flex-col items-center justify-center px-4 pt-20 pb-10">
+<header class="flex flex-col items-center justify-center px-4 pt-20 pb-10">
     <div class="text-center mb-8">
-        <div class="bg-green-500 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-green-500/40">
+        <div class="bg-green-500 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-green-500/40" aria-hidden="true">
             <i class="fas fa-scissors text-4xl text-white"></i>
         </div>
         <h1 class="text-5xl md:text-6xl font-extrabold mb-4 tracking-tight leading-tight">
             Pro Video <span class="text-green-500">Trimmer</span>
         </h1>
         <p class="text-slate-400 text-xl max-w-2xl mx-auto leading-relaxed">
-            Save time and disk space. Trim H.264 videos instantly,
+            Save time and disk space. Trim <strong>videos</strong> instantly,
             keeping original quality without re-encoding.
         </p>
     </div>
 
     <div class="flex flex-col items-center gap-4">
         <a id="main-download-btn" href="https://github.com/olexandr-klymenko/VideoCutter/releases/latest"
+           title="Download Pro Video Trimmer for Windows"
            class="bg-green-600 hover:bg-green-500 transition-all transform hover:-translate-y-1 active:scale-95 px-12 py-5 rounded-2xl text-xl font-bold flex items-center gap-3 shadow-2xl animate-pulse-slow">
             <i class="fas fa-download"></i>
             Download for Windows
         </a>
         <div class="flex items-center gap-3 text-sm text-slate-500">
-                <span id="version-tag" class="bg-slate-800 px-3 py-1 rounded-full border border-slate-700 italic">
-                    Fetching version...
-                </span>
+            <span id="version-tag" class="bg-slate-800 px-3 py-1 rounded-full border border-slate-700 italic">
+                Checking latest release...
+            </span>
             <a href="https://github.com/olexandr-klymenko/VideoCutter"
-               class="hover:text-slate-300 flex items-center gap-2 transition-colors">
+               class="hover:text-slate-300 flex items-center gap-2 transition-colors"
+               aria-label="Visit project on GitHub">
                 <i class="fab fa-github text-lg"></i> GitHub
             </a>
         </div>
     </div>
-</div>
+</header>
 
-<div class="max-w-5xl mx-auto px-4 py-16">
-    <h2 class="text-3xl font-bold text-center mb-12 uppercase tracking-widest text-slate-400">Three Simple Steps</h2>
-    <div class="grid md:grid-cols-3 gap-12">
-        <div class="text-center group">
-            <div class="w-14 h-14 bg-slate-800 border-2 border-green-500 rounded-2xl flex items-center justify-center mx-auto mb-6 font-bold text-xl text-green-500 transition-transform group-hover:rotate-12">
-                1
-            </div>
-            <h3 class="text-lg font-bold mb-2 text-slate-100 uppercase">Open</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">Select your video. The app instantly reads its structure without unnecessary waiting.</p>
+<main>
+    <section class="max-w-5xl mx-auto px-4 py-16">
+        <h2 class="text-3xl font-bold text-center mb-12 uppercase tracking-widest text-slate-400">Simple Workflow</h2>
+        <div class="grid md:grid-cols-3 gap-12">
+            <article class="text-center group">
+                <div class="w-14 h-14 bg-slate-800 border-2 border-green-500 rounded-2xl flex items-center justify-center mx-auto mb-6 font-bold text-xl text-green-500 transition-transform group-hover:rotate-12">
+                    1
+                </div>
+                <h3 class="text-lg font-bold mb-2 text-slate-100 uppercase">Import Video</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">Select your H.264 file. The software parses its structure instantly.</p>
+            </article>
+            <article class="text-center group">
+                <div class="w-14 h-14 bg-slate-800 border-2 border-green-500 rounded-2xl flex items-center justify-center mx-auto mb-6 font-bold text-xl text-green-500 transition-transform group-hover:rotate-12">
+                    2
+                </div>
+                <h3 class="text-lg font-bold mb-2 text-slate-100 uppercase">Define Range</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">Use visual sliders or exact timestamps to pick the perfect fragment.</p>
+            </article>
+            <article class="text-center group">
+                <div class="w-14 h-14 bg-slate-800 border-2 border-green-500 rounded-2xl flex items-center justify-center mx-auto mb-6 font-bold text-xl text-green-500 transition-transform group-hover:rotate-12">
+                    3
+                </div>
+                <h3 class="text-lg font-bold mb-2 text-slate-100 uppercase">Export Result</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">Click "TRIM". Stream Copy technology saves your file in milliseconds.</p>
+            </article>
         </div>
-        <div class="text-center group">
-            <div class="w-14 h-14 bg-slate-800 border-2 border-green-500 rounded-2xl flex items-center justify-center mx-auto mb-6 font-bold text-xl text-green-500 transition-transform group-hover:rotate-12">
-                2
-            </div>
-            <h3 class="text-lg font-bold mb-2 text-slate-100 uppercase">Select</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">Use intuitive sliders or precise time input to select the desired fragment.</p>
-        </div>
-        <div class="text-center group">
-            <div class="w-14 h-14 bg-slate-800 border-2 border-green-500 rounded-2xl flex items-center justify-center mx-auto mb-6 font-bold text-xl text-green-500 transition-transform group-hover:rotate-12">
-                3
-            </div>
-            <h3 class="text-lg font-bold mb-2 text-slate-100 uppercase">Get Result</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">Click "TRIM". Thanks to Stream Copy technology, your new file will be ready instantly.</p>
-        </div>
-    </div>
-</div>
+    </section>
 
-<div class="bg-slate-900/50 border-y border-slate-800/50 py-20 px-4">
-    <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-12 text-center">
-        <div class="p-4">
-            <div class="text-green-500 text-4xl mb-6"><i class="fas fa-tachometer-alt"></i></div>
-            <h3 class="text-xl font-bold mb-3">Lightning Fast</h3>
-            <p class="text-slate-400 text-sm">No re-encoding. We simply copy the required frames, making it up to 50x faster than traditional editors.</p>
+    <section class="bg-slate-900/50 border-y border-slate-800/50 py-20 px-4">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-12 text-center">
+            <div class="p-4">
+                <div class="text-green-500 text-4xl mb-6"><i class="fas fa-tachometer-alt"></i></div>
+                <h3 class="text-xl font-bold mb-3">Instant Speed</h3>
+                <p class="text-slate-400 text-sm">No re-encoding involved. 50x faster than traditional video editors.</p>
+            </div>
+            <div class="p-4">
+                <div class="text-blue-500 text-4xl mb-6"><i class="fas fa-shield-alt"></i></div>
+                <h3 class="text-xl font-bold mb-3">FFmpeg Powered</h3>
+                <p class="text-slate-400 text-sm">Uses industry-standard engine for maximum stability and compatibility.</p>
+            </div>
+            <div class="p-4">
+                <div class="text-purple-500 text-4xl mb-6"><i class="fas fa-code"></i></div>
+                <h3 class="text-xl font-bold mb-3">Open Source</h3>
+                <p class="text-slate-400 text-sm">Written in Python. No telemetry, no ads, transparent and secure code.</p>
+            </div>
         </div>
-        <div class="p-4">
-            <div class="text-blue-500 text-4xl mb-6"><i class="fas fa-shield-alt"></i></div>
-            <h3 class="text-xl font-bold mb-3">FFmpeg Reliability</h3>
-            <p class="text-slate-400 text-sm">Powered by a professional video processing engine that guarantees stability and format compatibility.</p>
-        </div>
-        <div class="p-4">
-            <div class="text-purple-500 text-4xl mb-6"><i class="fas fa-code"></i></div>
-            <h3 class="text-xl font-bold mb-3">Clean Code</h3>
-            <p class="text-slate-400 text-sm">Open-source project built with Python. No hidden features, telemetry, or annoying ads.</p>
-        </div>
-    </div>
-</div>
+    </section>
+</main>
 
 <footer class="py-12 text-center border-t border-slate-800/50">
     <div class="text-slate-500 text-sm">
-        <p>© 2026 Olexandr Klymenko • MIT License</p>
+        <p>© 2026 <a href="https://github.com/olexandr-klymenko" class="underline hover:text-slate-300">Olexandr Klymenko</a> • MIT License</p>
         <div class="mt-4 flex justify-center gap-4 text-xs tracking-widest uppercase">
             <span class="text-slate-600">Built with Python</span>
             <span class="text-slate-700">|</span>
@@ -143,10 +173,9 @@
             }
         } catch (error) {
             console.error('API Error:', error);
-            if (versionEl) versionEl.innerText = "v1.0.8"; // Fallback value
+            if (versionEl) versionEl.innerText = "v1.0.8";
         }
     }
-
     fetchLatestRelease();
 </script>
 </body>
