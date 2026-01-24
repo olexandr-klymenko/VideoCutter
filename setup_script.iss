@@ -10,33 +10,34 @@
 #endif
 
 [Setup]
-AppId={{H264-PRO-TRIMMER-9911-2024}}
-AppName=H264 Pro Trimmer
+AppId={{PRO-VIDEO-TRIMMER-9911-2024}}
+AppName=Pro Video Trimmer
 AppVersion={#AppVersionStr}
-OutputBaseFilename=H264Trimmer_Setup_v{#AppVersionStr}
-DefaultDirName={autopf}\H264ProTrimmer
-DefaultGroupName=H264 Pro Trimmer
-UninstallDisplayIcon={app}\H264ProTrimmer.exe
+OutputBaseFilename=ProVideoTrimmer_Setup_v{#AppVersionStr}
+DefaultDirName={autopf}\ProVideoTrimmer
+DefaultGroupName=Pro Video Trimmer
+UninstallDisplayIcon={app}\ProVideoTrimmer.exe
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
+SetupIconFile=icon.ico
 
 ; Метадані (Виправлено назви директив)
-VersionInfoCompany=H264 Pro Project
+VersionInfoCompany=Pro Video Trimmer Project
 VersionInfoDescription=Lossless Video Trimmer
 VersionInfoTextVersion={#AppVersionStr}
 VersionInfoCopyright=Copyright (C) 2026
 
 [Files]
-Source: "dist\H264ProTrimmer\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "dist\ProVideoTrimmer\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\H264 Pro Trimmer"; Filename: "{app}\H264ProTrimmer.exe"
-Name: "{autodesktop}\H264 Pro Trimmer"; Filename: "{app}\H264ProTrimmer.exe"; Tasks: desktopicon
+Name: "{group}\Pro Video Trimmer"; Filename: "{app}\ProVideoTrimmer.exe"
+Name: "{autodesktop}\Pro Video Trimmer"; Filename: "{app}\ProVideoTrimmer.exe"; Tasks: desktopicon
 
 [Tasks]
 ; ВИДАЛЕНО Flags: unchecked, тепер галочка буде СТОЯТИ по замовчуванню
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Run]
-Filename: "{app}\H264ProTrimmer.exe"; Description: "{cm:LaunchProgram,H264 Pro Trimmer}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\ProVideoTrimmer.exe"; Description: "{cm:LaunchProgram,Pro Video Trimmer}"; Flags: nowait postinstall skipifsilent

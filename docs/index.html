@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H264 Pro Trimmer — Швидка обрізка відео</title>
+    <title>H264 Pro Trimmer — Fast Video Trimming</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -36,11 +37,11 @@
             <i class="fas fa-scissors text-4xl text-white"></i>
         </div>
         <h1 class="text-5xl md:text-6xl font-extrabold mb-4 tracking-tight leading-tight">
-            H264 Pro <span class="text-green-500">Trimmer</span>
+            Pro Video <span class="text-green-500">Trimmer</span>
         </h1>
         <p class="text-slate-400 text-xl max-w-2xl mx-auto leading-relaxed">
-            Заощаджуйте час та дисковий простір. Обрізайте відео формату H.264 миттєво,
-            зберігаючи оригінальну якість без перекодування.
+            Save time and disk space. Trim H.264 videos instantly,
+            keeping original quality without re-encoding.
         </p>
     </div>
 
@@ -48,11 +49,11 @@
         <a id="main-download-btn" href="https://github.com/olexandr-klymenko/VideoCutter/releases/latest"
            class="bg-green-600 hover:bg-green-500 transition-all transform hover:-translate-y-1 active:scale-95 px-12 py-5 rounded-2xl text-xl font-bold flex items-center gap-3 shadow-2xl animate-pulse-slow">
             <i class="fas fa-download"></i>
-            Завантажити для Windows
+            Download for Windows
         </a>
         <div class="flex items-center gap-3 text-sm text-slate-500">
                 <span id="version-tag" class="bg-slate-800 px-3 py-1 rounded-full border border-slate-700 italic">
-                    Отримання версії...
+                    Fetching version...
                 </span>
             <a href="https://github.com/olexandr-klymenko/VideoCutter"
                class="hover:text-slate-300 flex items-center gap-2 transition-colors">
@@ -63,31 +64,28 @@
 </div>
 
 <div class="max-w-5xl mx-auto px-4 py-16">
-    <h2 class="text-3xl font-bold text-center mb-12 uppercase tracking-widest text-slate-400">Три простих кроки</h2>
+    <h2 class="text-3xl font-bold text-center mb-12 uppercase tracking-widest text-slate-400">Three Simple Steps</h2>
     <div class="grid md:grid-cols-3 gap-12">
         <div class="text-center group">
             <div class="w-14 h-14 bg-slate-800 border-2 border-green-500 rounded-2xl flex items-center justify-center mx-auto mb-6 font-bold text-xl text-green-500 transition-transform group-hover:rotate-12">
                 1
             </div>
-            <h3 class="text-lg font-bold mb-2 text-slate-100 uppercase">Відкрийте</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">Оберіть ваше відео. Програма миттєво зчитає його структуру
-                без зайвого очікування.</p>
+            <h3 class="text-lg font-bold mb-2 text-slate-100 uppercase">Open</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">Select your video. The app instantly reads its structure without unnecessary waiting.</p>
         </div>
         <div class="text-center group">
             <div class="w-14 h-14 bg-slate-800 border-2 border-green-500 rounded-2xl flex items-center justify-center mx-auto mb-6 font-bold text-xl text-green-500 transition-transform group-hover:rotate-12">
                 2
             </div>
-            <h3 class="text-lg font-bold mb-2 text-slate-100 uppercase">Оберіть</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">Використовуйте зручні слайдери або точне введення часу для
-                вибору потрібного фрагмента.</p>
+            <h3 class="text-lg font-bold mb-2 text-slate-100 uppercase">Select</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">Use intuitive sliders or precise time input to select the desired fragment.</p>
         </div>
         <div class="text-center group">
             <div class="w-14 h-14 bg-slate-800 border-2 border-green-500 rounded-2xl flex items-center justify-center mx-auto mb-6 font-bold text-xl text-green-500 transition-transform group-hover:rotate-12">
                 3
             </div>
-            <h3 class="text-lg font-bold mb-2 text-slate-100 uppercase">Отримайте</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">Натисніть "ОБРІЗАТИ". Завдяки технології Stream Copy новий
-                файл буде готовий миттєво.</p>
+            <h3 class="text-lg font-bold mb-2 text-slate-100 uppercase">Get Result</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">Click "TRIM". Thanks to Stream Copy technology, your new file will be ready instantly.</p>
         </div>
     </div>
 </div>
@@ -96,21 +94,18 @@
     <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-12 text-center">
         <div class="p-4">
             <div class="text-green-500 text-4xl mb-6"><i class="fas fa-tachometer-alt"></i></div>
-            <h3 class="text-xl font-bold mb-3">Швидкість світла</h3>
-            <p class="text-slate-400 text-sm">Ніякого перекодування. Ми просто копіюємо потрібні кадри, що в 50 разів
-                швидше за звичайні редактори.</p>
+            <h3 class="text-xl font-bold mb-3">Lightning Fast</h3>
+            <p class="text-slate-400 text-sm">No re-encoding. We simply copy the required frames, making it up to 50x faster than traditional editors.</p>
         </div>
         <div class="p-4">
             <div class="text-blue-500 text-4xl mb-6"><i class="fas fa-shield-alt"></i></div>
-            <h3 class="text-xl font-bold mb-3">Надійність FFmpeg</h3>
-            <p class="text-slate-400 text-sm">Використовує професійний рушій обробки відео, який гарантує стабільність
-                та сумісність форматів.</p>
+            <h3 class="text-xl font-bold mb-3">FFmpeg Reliability</h3>
+            <p class="text-slate-400 text-sm">Powered by a professional video processing engine that guarantees stability and format compatibility.</p>
         </div>
         <div class="p-4">
             <div class="text-purple-500 text-4xl mb-6"><i class="fas fa-code"></i></div>
-            <h3 class="text-xl font-bold mb-3">Чистий код</h3>
-            <p class="text-slate-400 text-sm">Проєкт з відкритим кодом на Python. Без прихованих функцій, телеметрії та
-                реклами.</p>
+            <h3 class="text-xl font-bold mb-3">Clean Code</h3>
+            <p class="text-slate-400 text-sm">Open-source project built with Python. No hidden features, telemetry, or annoying ads.</p>
         </div>
     </div>
 </div>
@@ -128,7 +123,7 @@
 
 <script>
     async function fetchLatestRelease() {
-        const repo = "olexandr-klymenko/VideoCutter"; // Переконайтеся, що це ваш актуальний репозиторій
+        const repo = "olexandr-klymenko/VideoCutter";
         const versionEl = document.getElementById('version-tag');
         const downloadBtn = document.getElementById('main-download-btn');
 
@@ -137,20 +132,18 @@
             if (!response.ok) throw new Error('API Error');
             const data = await response.json();
 
-            // Оновлюємо тег версії (наприклад v1.0.8)
             if (versionEl) {
                 versionEl.innerText = data.tag_name;
                 versionEl.classList.remove('italic');
             }
 
-            // Шукаємо лінк на .exe
             const asset = data.assets.find(a => a.name.endsWith('.exe'));
             if (asset && downloadBtn) {
                 downloadBtn.href = asset.browser_download_url;
             }
         } catch (error) {
-            console.error('Помилка API:', error);
-            if (versionEl) versionEl.innerText = "v1.0.8"; // Fallback значення
+            console.error('API Error:', error);
+            if (versionEl) versionEl.innerText = "v1.0.8"; // Fallback value
         }
     }
 

@@ -1,4 +1,4 @@
-name: Build and Release H264 Pro Trimmer
+name: Build and Release Pro Video Trimmer
 
 on:
   push:

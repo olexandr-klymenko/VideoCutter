@@ -1,53 +1,53 @@
-# H264 Pro Trimmer 🎬
+# Pro Video Trimmer 🎬
 
-Простий та потужний інструмент для швидкої обрізки відео у форматі H.264 без втрати якості (без перекодування).
+A simple and powerful tool for lightning-fast video trimming across all formats with zero quality loss (no re-encoding).
 
 [![Latest Release](https://img.shields.io/github/v/release/olexandr-klymenko/VideoCutter?label=Download%20Latest&color=green)](https://github.com/olexandr-klymenko/VideoCutter/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## ✨ Особливості
-- Миттєва обрізка: Використовує потужність FFmpeg для вирізання фрагментів без рендерингу (Stream Copy).
-- Зручний інтерфейс: Побудований на базі Python (Tkinter) для максимальної швидкості роботи.
-- Автоматичні оновлення: Програма сама перевіряє наявність нових версій через GitHub API при запуску.
-- Повноцінний інсталятор: Зручний процес встановлення в Windows через Inno Setup.
+## ✨ Features
+- **Instant Trimming:** Leverages FFmpeg power to cut segments without re-rendering (Stream Copy).
+- **User-Friendly UI:** Built with Python (Tkinter) for maximum performance and native feel.
+- **Automatic Updates:** Automatically checks for new versions via GitHub API on startup.
+- **Full Installer:** Easy Windows installation process powered by Inno Setup.
 
-## 🚀 Завантаження
-Ви завжди можете завантажити найсвіжішу версію інсталятора за цим посиланням:
-👉 [Завантажити інсталятор (.exe)](https://github.com/olexandr-klymenko/VideoCutter/releases/latest)
+## 🚀 Download
+You can always download the latest version of the installer here:
+👉 **[Download Installer (.exe)](https://github.com/olexandr-klymenko/VideoCutter/releases/latest)**
 
 ---
 
-## 🛠 Розробка та збірка
+## 🛠 Development and Build
 
-### 1. Вимоги
+### 1. Requirements
 - Python 3.12+
-- Git Bash (для запуску скриптів автоматизації)
-- Inno Setup 6 (для створення локальних інсталяторів)
+- Git Bash (for running automation scripts)
+- Inno Setup 6 (for creating local installers)
 
-### 2. Встановлення
+### 2. Installation
 - git clone https://github.com/olexandr-klymenko/VideoCutter.git
 - cd VideoCutter
 - pip install -r requirements.txt
 
-### 3. Автоматизація релізу (CI/CD)
-Проєкт використовує багаторівневу систему перевірки перед релізом:
+### 3. Release Automation (CI/CD)
+The project uses a multi-stage validation process before each release:
 
-1. Валідація: Скрипт check_configs.py перевіряє кодування та наявність версії у всіх критичних файлах.
-2. Локальна перевірка (Dry Run): Запустіть ./release.sh --dry-run. Це збере проєкт локально в папку Output/ без змін у Git.
-3. Повний реліз: Запустіть ./release.sh. Це автоматично оновить теги та опублікує код.
+1. Validation: The `check_configs.py` script verifies encoding and version presence in all critical files.
+2. Local check (Dry Run): Run `./release.sh --dry-run`. This builds the project locally into the `Output/` folder without making any Git changes.
+3. Full release: Run `./release.sh`. This automatically updates tags and publishes the code.
 
 ---
 
-## 📂 Структура проєкту
-* main.py — логіка програми та GUI.
-* version.txt — єдине джерело версії для всіх скриптів.
-* main.spec — конфігурація збірки PyInstaller.
-* setup_script.iss — скрипт пакування для Inno Setup.
-* check_configs.py — скрипт валідації перед збіркою.
-* release.sh — головний скрипт автоматизації.
+## 📂 Project Structure
+- `main.py` — application logic and GUI.
+- `version.txt` — single source of truth for the version used across all scripts.
+- `main.spec` — PyInstaller build configuration.
+- `setup_script.iss` — Inno Setup packaging script.
+- `check_configs.py` — pre-build validation script.
+- `release.sh` — main automation script.
 
-## 📝 Ліцензія
-Розповсюджується під ліцензією MIT. Детальніше у файлі LICENSE.
+## 📝 License
+Distributed under the MIT License. See the LICENSE file for details.
 
 ---
 Developed by Olexandr Klymenko (https://github.com/olexandr-klymenko)

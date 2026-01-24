@@ -84,10 +84,22 @@ else:
 FFMPEG_BIN = BASE_DIR / "bin" / "ffmpeg.exe"
 
 
+def get_resource_path(relative_path: str) -> Path:
+    """Отримує абсолютний шлях до ресурсу, працює для dev та для PyInstaller"""
+    if hasattr(sys, '_MEIPASS'):
+        # PyInstaller створює тимчасову папку і зберігає шлях у _MEIPASS
+        base_path = Path(sys._MEIPASS)
+    else:
+        base_path = Path(__file__).parent
+
+    return base_path / relative_path
+
+
 class PureFFmpegTrimmer:
     def __init__(self, root):
         self.root = root
-        self.root.title(f"H264 Pro Trimmer {VERSION}")
+        self.root.title(f"Pro Video Trimmer 🎬 {VERSION}")
+
         self.ffmpeg_version = "Невідомо"
 
         if not self.check_ffmpeg():
@@ -114,6 +126,10 @@ class PureFFmpegTrimmer:
 
         self.version_label = tk.Label(root, text=f"Версія: {VERSION}", fg="gray")
         self.version_label.pack(side="bottom", anchor="e", padx=10, pady=5)
+
+        icon_path = get_resource_path("icon.ico")
+        if icon_path.exists():
+            self.root.iconbitmap(str(icon_path))
 
         update_thread = threading.Thread(target=check_for_updates, daemon=True)
         update_thread.start()

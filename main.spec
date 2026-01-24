@@ -6,7 +6,8 @@ a = Analysis(
     binaries=[],
     datas=[
         ('bin/ffmpeg.exe', 'bin'),
-        ('version.txt', '.')
+        ('version.txt', '.'),
+        ('icon.ico', '.')
     ],
     hiddenimports=[],
     hookspath=[],
@@ -26,7 +27,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True, # Обов'язково True для onedir
-    name='H264ProTrimmer',
+    name='ProVideoTrimmer',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -37,6 +38,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon='icon.ico',
 )
 
 coll = COLLECT(
@@ -47,5 +49,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='H264ProTrimmer', # Назва вихідної папки в dist/
+    name='ProVideoTrimmer', # Назва вихідної папки в dist/
 )
