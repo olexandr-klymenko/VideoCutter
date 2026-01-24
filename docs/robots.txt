@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Host
+Host: https://olexandr-klymenko.github.io/VideoCutter/
+
+# Sitemap
+Sitemap: https://olexandr-klymenko.github.io/VideoCutter/sitemap.xml
