@@ -7,7 +7,8 @@ a = Analysis(
     datas=[
         ('bin/ffmpeg.exe', 'bin'),
         ('version.txt', '.'),
-        ('icon.ico', '.')
+        ('icon.ico', '.'),
+        ('locales/*.json', 'locales'),
     ],
     hiddenimports=[],
     hookspath=[],
