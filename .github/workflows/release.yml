@@ -3,7 +3,8 @@ name: Build and Release Pro Video Trimmer
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*'      # Для v1.0.9
+      - '[0-9]+.[0-9]+.[0-9]+*' # Для 1.0.9, 1.0.9-alpha тощо
   workflow_dispatch:
 
 permissions:
