@@ -3,7 +3,8 @@ name: Build and Release Pro Video Trimmer
 on:
   push:
     tags:
-      - 'v*'      # Для v1.0.9
+      - 'v*'          # Дозволити v1.0.9, v2.0.0
+      - '!v*-beta*'   # ІГНОРУВАТИ v1.0.10-beta, v1.1-beta2
   workflow_dispatch:
 
 permissions:
@@ -41,7 +42,10 @@ jobs:
 
     - name: Build Installer (Inno Setup)
       run: |
-        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup_script.iss /DAppVersion=${{ github.ref_name }}
+        # Використовуємо ISCC для збірки інсталятора
+        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup_script.iss
+      # Примітка: Ми прибрали /DAppVersion, оскільки ваш скрипт сам
+      # читає version.txt через препроцесор. Це надійніше.
 
     - name: Create GitHub Release
       if: startsWith(github.ref, 'refs/tags/')

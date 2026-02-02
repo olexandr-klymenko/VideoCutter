@@ -22,5 +22,6 @@
     "update_found_title": "Знайдено оновлення",
     "update_message": "Доступна нова версія: {new_version}\nПоточна версія: {version}\n\nБажаєте перейти до завантаження?",
     "success_title": "Успіх",
-    "success_message": "Готово!\nЗбережено: {name}"
+    "success_message": "Готово!\nЗбережено: {name}",
+    "open_folder_checkbox": "Відкрити папку з файлом після завершення"
 }

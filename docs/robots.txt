@@ -1,8 +1,11 @@
+# Pastor Video Trimmer Robots.txt
 User-agent: *
 Allow: /
 
-# Host
-Host: https://olexandr-klymenko.github.io/VideoCutter/
+# Забороняємо індексацію технічних папок, якщо вони є
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /dist/*.map
 
-# Sitemap
+# Посилання на вашу карту сайту (Sitemap)
 Sitemap: https://olexandr-klymenko.github.io/VideoCutter/sitemap.xml
