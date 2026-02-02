@@ -1,8 +1,26 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
+import sys
+from pathlib import Path
+
+block_cipher = None
+project_root = os.path.abspath(os.getcwd())
+
+# Читаємо версію, щоб визначити, чи це бета
+version_file = os.path.join(project_root, 'version.txt')
+try:
+    with open(version_file, 'r') as f:
+        version_str = f.read().strip()
+except:
+    version_str = "1.0.0"
+
+# Визначаємо назву папки на основі версії
+is_beta = 'beta' in version_str.lower()
+app_output_name = 'ProVideoTrimmer Beta' if is_beta else 'ProVideoTrimmer'
 
 a = Analysis(
     ['main.py'],
-    pathex=[],
+    pathex=[project_root],
     binaries=[],
     datas=[
         ('bin/ffmpeg.exe', 'bin'),
@@ -17,28 +35,23 @@ a = Analysis(
     excludes=[],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
-    cipher=None,
+    cipher=block_cipher,
     noarchive=False,
 )
 
-pyz = PYZ(a.pure, a.zipped_data, cipher=None)
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
 exe = EXE(
     pyz,
     a.scripts,
     [],
-    exclude_binaries=True, # Обов'язково True для onedir
-    name='ProVideoTrimmer',
+    exclude_binaries=True,
+    name='ProVideoTrimmer', # Назва самого .exe файлу (краще лишити без змін)
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
     console=False,
-    disable_windowed_traceback=False,
-    argv_emulation=False,
-    target_arch=None,
-    codesign_identity=None,
-    entitlements_file=None,
     icon='icon.ico',
 )
 
@@ -50,5 +63,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='ProVideoTrimmer', # Назва вихідної папки в dist/
+    name='ProVideoTrimmer', # Завжди одна назва для PyInstaller
 )

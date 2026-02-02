@@ -20,34 +20,41 @@ You can always download the latest version of the installer here:
 ## 🛠 Development and Build
 
 ### 1. Requirements
-- Python 3.12+
-- Git Bash (for running automation scripts)
-- Inno Setup 6 (for creating local installers)
+- **Python 3.12+**
+- **Inno Setup 6** (installed in the default path)
+- **FFmpeg** (required for the application to run)
 
 ### 2. Installation
-- git clone https://github.com/olexandr-klymenko/VideoCutter.git
-- cd VideoCutter
-- pip install -r requirements.txt
+1. git clone https://github.com/olexandr-klymenko/VideoCutter.git
+2. cd VideoCutter
+3. python -m venv .venv
+4. source .venv/Scripts/activate  # On Windows: .venv\Scripts\activate
+5. pip install -r requirements.txt
 
-### 3. Release Automation (CI/CD)
-The project uses a multi-stage validation process before each release:
+### 3. Release Automation (Invoke)
+The project uses **Python Invoke** to automate development tasks. This ensures consistent environments and handles Windows-specific encoding and paths automatically.
 
-1. Validation: The `check_configs.py` script verifies encoding and version presence in all critical files.
-2. Local check (Dry Run): Run `./release.sh --dry-run`. This builds the project locally into the `Output/` folder without making any Git changes.
-3. Full release: Run `./release.sh`. This automatically updates tags and publishes the code.
+| Command | Description |
+| :--- | :--- |
+| `inv test` | Runs Unit Tests with forced UTF-8 and English locale. |
+| `inv build` | Cleans artifacts, runs tests, builds EXE and creates a Setup installer. |
+| `inv start-new-release` | Creates a release branch, bumps version, and adds `-beta` tag. |
+| `inv finish-release` | Removes the beta tag and prepares the version for production. |
 
 ---
 
 ## 📂 Project Structure
-- `main.py` — application logic and GUI.
-- `version.txt` — single source of truth for the version used across all scripts.
+- `src/` — Application source code (logic and UI).
+- `tests/` — Unit tests for UI and engine logic.
+- `tasks.py` — Automation scripts (replacing the old release.sh).
+- `version.txt` — Single source of truth for the application version.
 - `main.spec` — PyInstaller build configuration.
 - `setup_script.iss` — Inno Setup packaging script.
-- `check_configs.py` — pre-build validation script.
-- `release.sh` — main automation script.
+- `dist/` — Compiled application files (generated after build).
+- `Output/` — Ready-to-use Windows Installers (generated after build).
 
 ## 📝 License
 Distributed under the MIT License. See the LICENSE file for details.
 
 ---
-Developed by Olexandr Klymenko (https://github.com/olexandr-klymenko)
+Developed by **Olexandr Klymenko** ([GitHub Profile](https://github.com/olexandr-klymenko))

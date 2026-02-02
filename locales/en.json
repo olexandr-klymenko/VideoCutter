@@ -22,5 +22,6 @@
     "update_found_title": "Update Available",
     "update_message": "A new version is available: {new_version}\nCurrent version: {version}\n\nWould you like to download it now?",
     "success_title": "Success",
-    "success_message": "Done!\nSaved: {name}"
+    "success_message": "Done!\nSaved: {name}",
+    "open_folder_checkbox": "Open folder with file when finished"
 }
