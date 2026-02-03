@@ -3,7 +3,7 @@
 A simple and powerful tool for lightning-fast video trimming across all formats with zero quality loss (no re-encoding).
 
 ## 📺 Video Demo
-[![Pastor Video Trimmer Demo](https://img.youtube.com/vi/ID_ВАШОГО_ВІДЕО/0.jpg)](https://www.youtube.com/watch?v=ID_ВАШОГО_ВІДЕО)
+[![Pastor Video Trimmer Demo](https://img.youtube.com/vi/YbMkAyqNGu0/0.jpg)](https://www.youtube.com/watch?v=YbMkAyqNGu0)
 
 [![Latest Release](https://img.shields.io/github/v/release/olexandr-klymenko/VideoCutter?label=Download%20Latest&color=green)](https://github.com/olexandr-klymenko/VideoCutter/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
