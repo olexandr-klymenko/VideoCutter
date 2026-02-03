@@ -1,4 +1,4 @@
-# Pro Video Trimmer 🎬
+# Pastor Video Trimmer 🎬
 
 A simple and powerful tool for lightning-fast video trimming across all formats with zero quality loss (no re-encoding).
 
@@ -62,4 +62,4 @@ Distributed under the MIT License. See the LICENSE file for details.
 *Click the image above to watch the installation and usage guide.*
 
 ---
-Developed by **Olexandr Klymenko** ([GitHub Profile](https://github.com/olexandr-klymenko))
+Developed by **Olexandr Klymenko aka Pastor** ([GitHub Profile](https://github.com/olexandr-klymenko))
