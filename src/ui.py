@@ -418,34 +418,64 @@ class PureFFmpegTrimmer:
             ])
 
     def show_success_dialog(self, save_path: Path):
-        """Кастомне вікно успіху з опцією відкриття папки."""
+        """Custom success window with a layout that prevents button disappearing."""
         dialog = tk.Toplevel(self.root)
         dialog.title(self.lang_mgr.get("success_title"))
-        dialog.geometry("400x150")
-        dialog.resizable(False, False)
-        dialog.transient(self.root) # Поверх основного вікна
-        dialog.grab_set() # Блокуємо основне вікно
 
-        # Центруємо відносно основного вікна
+        # Set minimum size and allow the window to grow if needed
+        dialog.geometry("400x220")
+        dialog.resizable(False, False)
+        dialog.transient(self.root)
+        dialog.grab_set()
+
+        # Center the dialog
         x = self.root.winfo_x() + (self.root.winfo_width() // 2) - 200
-        y = self.root.winfo_y() + (self.root.winfo_height() // 2) - 75
+        y = self.root.winfo_y() + (self.root.winfo_height() // 2) - 110
         dialog.geometry(f"+{x}+{y}")
 
-        tk.Label(dialog, text=self.lang_mgr.get("success_message", name=save_path.name),
-                 wraplength=350, pady=10).pack()
+        # Grid configuration to manage space
+        dialog.columnconfigure(0, weight=1)
+        dialog.rowconfigure(0, weight=1)  # Message area expands
 
-        # Опція "Відкрити папку" (увімкнена за замовчуванням)
+        # Message container
+        msg_frame = tk.Frame(dialog, padx=20, pady=10)
+        msg_frame.grid(row=0, column=0, sticky="nsew")
+
+        # Filename processing
+        display_name = save_path.name
+        if len(display_name) > 80:  # Allow more chars since we use wrapping
+            display_name = display_name[:40] + "..." + display_name[-35:]
+
+        msg_text = f"{self.lang_mgr.get('success_message', name='')}\n\n{display_name}"
+
+        # Using a fixed width for wrapping and anchor to keep it neat
+        msg_label = tk.Label(
+            msg_frame,
+            text=msg_text,
+            wraplength=350,
+            justify="center",
+            font=(SEGOE_UI, 9)
+        )
+        msg_label.pack(expand=True)
+
+        # Bottom controls area (fixed height)
+        controls_frame = tk.Frame(dialog, pady=10)
+        controls_frame.grid(row=1, column=0, sticky="ew")
+
         var_open = tk.BooleanVar(value=True)
-        chk = tk.Checkbutton(dialog, text=self.lang_mgr.get("open_folder_checkbox"), variable=var_open)
-        chk.pack(pady=5)
+        chk = tk.Checkbutton(
+            controls_frame,
+            text=self.lang_mgr.get("open_folder_checkbox"),
+            variable=var_open
+        )
+        chk.pack()
 
         def on_ok():
             if var_open.get():
-                # Відкриваємо провідник і виділяємо файл (тільки для Windows)
                 subprocess.run(['explorer', '/select,', str(save_path.absolute())])
             dialog.destroy()
 
-        tk.Button(dialog, text="OK", width=10, command=on_ok).pack(pady=10)
+        tk.Button(controls_frame, text="OK", width=12, command=on_ok).pack(pady=5)
 
     # --- Допоміжні методи (без змін логіки) ---
     def set_ui_state(self, state):

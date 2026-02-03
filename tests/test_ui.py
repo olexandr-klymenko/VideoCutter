@@ -1,8 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
 import sys
-from pathlib import Path
 import tkinter as tk
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 # Додаємо корінь проєкту до sys.path, щоб імпорти src. працювали
@@ -12,7 +12,7 @@ if (project_root / "src").exists():
 
 # Імпортуємо з оновленої структури
 from src.ui import PureFFmpegTrimmer
-from src.i18n import LanguageManager
+
 
 class TestVideoCutter(unittest.TestCase):
     def setUp(self):
@@ -22,10 +22,9 @@ class TestVideoCutter(unittest.TestCase):
 
         # Патчимо ініціалізацію, щоб не залежати від наявності ffmpeg.exe
         # та не запускати перевірку оновлень через мережу
-        with patch('src.video_engine.VideoEngine.check_ffmpeg', return_value=(True, "7.0.1")):
-            with patch('src.ui.PureFFmpegTrimmer.check_for_updates'):
-                self.app = PureFFmpegTrimmer(self.root)
-                self.app.duration = 3661.0
+        with patch('src.ui.PureFFmpegTrimmer.check_for_updates'):
+            self.app = PureFFmpegTrimmer(self.root)
+            self.app.duration = 3661.0
 
     def tearDown(self):
         """Очищення після тесту"""
@@ -80,6 +79,7 @@ class TestVideoCutter(unittest.TestCase):
 
         actual_start = float(cmd[cmd.index('-ss') + 1])
         self.assertEqual(actual_start, 10.5)
+
 
 if __name__ == '__main__':
     unittest.main()
