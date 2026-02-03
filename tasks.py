@@ -156,6 +156,6 @@ def release(c, dry_run=False):
     # Дозволяємо порожній коміт, щоб не переривати скрипт
     c.run(f'git commit -m "feat: release {tag}" || echo "No changes to commit"')
 
-    c.run(f"git tag -a {tag} -m 'Release {tag}'")
+    c.run(f'git tag -a {tag} -m "Release {tag}"')
     c.run("git push origin master --tags")
     print(f"✅ {tag} released and pushed to GitHub!")
