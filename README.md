@@ -56,5 +56,10 @@ The project uses **Python Invoke** to automate development tasks. This ensures c
 ## 📝 License
 Distributed under the MIT License. See the LICENSE file for details.
 
+## 📺 Video Demo
+[![Pastor Video Trimmer Demo](https://img.youtube.com/vi/ID_ВАШОГО_ВІДЕО/0.jpg)](https://www.youtube.com/watch?v=ID_ВАШОГО_ВІДЕО)
+
+*Click the image above to watch the installation and usage guide.*
+
 ---
 Developed by **Olexandr Klymenko** ([GitHub Profile](https://github.com/olexandr-klymenko))
